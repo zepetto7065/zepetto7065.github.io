@@ -13,18 +13,14 @@ excerpt: "Alembic is a starting point for [Jekyll](https://jekyllrb.com/) projec
 
 ## Features
 
-- Available as a **theme gem** and **GitHub Pages** theme
-- Clear and elegant design that can be used out of the box or as solid starting point
-- Tested in all major browsers, including **IE and Edge**
-- Built in **Service Worker** so it can work offline and on slow connections
-- **Configurable colours** and typography in a single settings file
-- Extensive set of **shortcodes** to include various elements; such as buttons, icons, figure images and more
-- Solid **typographic framework** from [Sassline](https://sassline.com/)
-- Configurable navigation via a single file
-- Modular Jekyll components
-- Post category support in the form of a single post index page grouped by category
-- Built in live search using JavaScript
-- **Contact form** built in using [Formspree](https://formspree.io/)
-- Designed with **[Siteleaf](https://www.siteleaf.com/)** in mind
-- Has 9 of the most popular networks as performant sharing buttons
-- Has documentation
+- 고민하고 정리하기를 좋아합니다.
+- 개발과 요리, 캠핑
+
+## redume
+- 와디즈(Wadiz) 2022.01 ~ 2024.07 , 2025.03 ~
+  - 결제 / 정산 개발
+- 티몬(Tmon) 2021.07 ~ 2021.12
+  - 쿠폰 개발 
+- 유비벨록스 2020.01 ~ 2021.07
+  - 마이데이터 플랫폼 
+- 씨유홀딩스 2019.01 ~ 2019.12
