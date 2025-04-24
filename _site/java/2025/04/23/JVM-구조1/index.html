@@ -10,26 +10,26 @@
 
     
       <!-- Begin Jekyll SEO tag v2.7.1 -->
-<title>Description of an Alembic | 개발자 블로그</title>
+<title>JVM 구조를 알아보도록 하자 | 개발자 블로그</title>
 <meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="Description of an Alembic" />
+<meta property="og:title" content="JVM 구조를 알아보도록 하자" />
 <meta name="author" content="DavidDarnes" />
 <meta property="og:locale" content="en_GB" />
-<meta name="description" content="The complete distilling apparatus consists of three parts: the “cucurbit” (Arabic ḳarʿa, Greek βίκος), the still pot containing the liquid to be distilled, which is heated by a flame; the “head” or “cap” (Arabic anbiḳ, Greek ἄμβιξ) which fits over the mouth of the cucurbit to receive the vapors, with an attached downward-sloping “tube” (Greek σωλήν), leading to the “receiver” (Arabic ḳābila, Greek ἄγγος or φιάλη) container." />
-<meta property="og:description" content="The complete distilling apparatus consists of three parts: the “cucurbit” (Arabic ḳarʿa, Greek βίκος), the still pot containing the liquid to be distilled, which is heated by a flame; the “head” or “cap” (Arabic anbiḳ, Greek ἄμβιξ) which fits over the mouth of the cucurbit to receive the vapors, with an attached downward-sloping “tube” (Greek σωλήν), leading to the “receiver” (Arabic ḳābila, Greek ἄγγος or φιάλη) container." />
-<link rel="canonical" href="http://localhost:4000/general/external%20sources/2016/08/27/example-post-one/" />
-<meta property="og:url" content="http://localhost:4000/general/external%20sources/2016/08/27/example-post-one/" />
+<meta name="description" content="📚 목차 1. Java Virtual Machine, 자바 실행기 자바는 JVM을 통해 OS로 도달 2. JVM 구성요소 클래스로더 (Class Loader) 실행엔진 (Execution Engine) 인터프리터 JIT 컴파일러 가비지 컬렉터 런타임 데이터 영역 PC Register JVM 스택 Native Method Stack Method Area Heap New/Young 영역 Old 영역 1. Java Virtual Machine, 자바 실행기 📌 자바는 JVM을 통해 OS로 도달 JVM까지의 과정: 자바는 Java Compiler를 통해 .java 파일을 .class 파일로 변환한 다음, 이를 JVM이 처리하여 OS에서 실행. .java → Java Compiler → .class → JVM → OS Java Compiler는 jdk/bin/javac.exe 위치에 있습니다. 2. JVM 구성요소 출처: 위키피디아 2.1 🔹 클래스로더 (Class Loader) JVM 내에서 클래스 파일 및 JAR 내 저장된 클래스를 로드하고, 이를 JVM 위에 탑재. 2.2 🔹 실행엔진 (Execution Engine) Java 바이트코드(.class)를 실제로 실행. 바이트코드는 사람이 보기 편하도록 설계되었으나, 실행엔진이 이를 실제 기계어로 변환. ▶️ 인터프리터 바이트코드를 한 줄씩 읽고 해석하여 실행. ▶️ JIT 컴파일러 Just-In-Time Compilation: 실행 중 바이트코드를 기계어로 번역. 인터프리터 방식의 단점(속도 문제)을 보완. ▶️ 가비지 컬렉터 사용되지 않는 객체를 탐색하여 메모리에서 제거. 메모리 누수를 방지하며, 별도의 정리 글에서 자세히 다룰 예정. 2.3 🔹 런타임 데이터 영역 (Runtime Data Area) 운영체제로부터 할당받은 메모리 공간. 흔히 Method, Heap, Stack 영역으로 알려진 메모리 구조. ▶️ PC Register 각 스레드에 하나씩 생성. 현재 실행 중인 명령어의 위치를 저장. ▶️ JVM 스택 메서드 내 데이터 저장 공간. (예: 매개변수, 지역 변수, 리턴 값 등) ▶️ Native Method Stack 자바가 아닌 타 언어(C, C++ 등)로 작성된 네이티브 코드 실행을 위한 메모리 공간. ▶️ Method Area 클래스 정보 및 클래스 변수 저장 공간. 런타임 상수 풀(Runtime Constant Pool)에서 상수 관리. ▶️ Heap 객체와 배열을 저장하는 메모리 공간. 🔸 New/Young 영역 생명 주기가 짧은 객체를 저장. 가비지 컬렉션(GC)에 의해 정리되며, Minor GC로 처리. 구성: Eden 영역: 객체가 최초로 생성되는 장소. Survivor 영역(Survivor 0, Survivor 1): Eden에서 살아남은 객체들이 이동. 🔸 Old 영역 생명 주기가 긴 객체를 저장. Major GC로 정리되며, Minor GC보다 속도가 느림." />
+<meta property="og:description" content="📚 목차 1. Java Virtual Machine, 자바 실행기 자바는 JVM을 통해 OS로 도달 2. JVM 구성요소 클래스로더 (Class Loader) 실행엔진 (Execution Engine) 인터프리터 JIT 컴파일러 가비지 컬렉터 런타임 데이터 영역 PC Register JVM 스택 Native Method Stack Method Area Heap New/Young 영역 Old 영역 1. Java Virtual Machine, 자바 실행기 📌 자바는 JVM을 통해 OS로 도달 JVM까지의 과정: 자바는 Java Compiler를 통해 .java 파일을 .class 파일로 변환한 다음, 이를 JVM이 처리하여 OS에서 실행. .java → Java Compiler → .class → JVM → OS Java Compiler는 jdk/bin/javac.exe 위치에 있습니다. 2. JVM 구성요소 출처: 위키피디아 2.1 🔹 클래스로더 (Class Loader) JVM 내에서 클래스 파일 및 JAR 내 저장된 클래스를 로드하고, 이를 JVM 위에 탑재. 2.2 🔹 실행엔진 (Execution Engine) Java 바이트코드(.class)를 실제로 실행. 바이트코드는 사람이 보기 편하도록 설계되었으나, 실행엔진이 이를 실제 기계어로 변환. ▶️ 인터프리터 바이트코드를 한 줄씩 읽고 해석하여 실행. ▶️ JIT 컴파일러 Just-In-Time Compilation: 실행 중 바이트코드를 기계어로 번역. 인터프리터 방식의 단점(속도 문제)을 보완. ▶️ 가비지 컬렉터 사용되지 않는 객체를 탐색하여 메모리에서 제거. 메모리 누수를 방지하며, 별도의 정리 글에서 자세히 다룰 예정. 2.3 🔹 런타임 데이터 영역 (Runtime Data Area) 운영체제로부터 할당받은 메모리 공간. 흔히 Method, Heap, Stack 영역으로 알려진 메모리 구조. ▶️ PC Register 각 스레드에 하나씩 생성. 현재 실행 중인 명령어의 위치를 저장. ▶️ JVM 스택 메서드 내 데이터 저장 공간. (예: 매개변수, 지역 변수, 리턴 값 등) ▶️ Native Method Stack 자바가 아닌 타 언어(C, C++ 등)로 작성된 네이티브 코드 실행을 위한 메모리 공간. ▶️ Method Area 클래스 정보 및 클래스 변수 저장 공간. 런타임 상수 풀(Runtime Constant Pool)에서 상수 관리. ▶️ Heap 객체와 배열을 저장하는 메모리 공간. 🔸 New/Young 영역 생명 주기가 짧은 객체를 저장. 가비지 컬렉션(GC)에 의해 정리되며, Minor GC로 처리. 구성: Eden 영역: 객체가 최초로 생성되는 장소. Survivor 영역(Survivor 0, Survivor 1): Eden에서 살아남은 객체들이 이동. 🔸 Old 영역 생명 주기가 긴 객체를 저장. Major GC로 정리되며, Minor GC보다 속도가 느림." />
+<link rel="canonical" href="http://localhost:4000/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/" />
+<meta property="og:url" content="http://localhost:4000/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/" />
 <meta property="og:site_name" content="개발자 블로그" />
 <meta property="og:image" content="http://localhost:4000/assets/default-social-image.png" />
 <meta property="og:type" content="article" />
-<meta property="article:published_time" content="2016-08-27T00:00:00+01:00" />
+<meta property="article:published_time" content="2025-04-23T00:00:00+01:00" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta property="twitter:image" content="http://localhost:4000/assets/default-social-image.png" />
-<meta property="twitter:title" content="Description of an Alembic" />
+<meta property="twitter:title" content="JVM 구조를 알아보도록 하자" />
 <meta name="twitter:site" content="@DavidDarnes" />
 <meta name="twitter:creator" content="@DavidDarnes" />
 <script type="application/ld+json">
-{"image":"http://localhost:4000/assets/default-social-image.png","url":"http://localhost:4000/general/external%20sources/2016/08/27/example-post-one/","headline":"Description of an Alembic","dateModified":"2016-08-27T00:00:00+01:00","datePublished":"2016-08-27T00:00:00+01:00","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/assets/logos/logo.svg"},"name":"DavidDarnes"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/general/external%20sources/2016/08/27/example-post-one/"},"author":{"@type":"Person","name":"DavidDarnes"},"@type":"BlogPosting","description":"The complete distilling apparatus consists of three parts: the “cucurbit” (Arabic ḳarʿa, Greek βίκος), the still pot containing the liquid to be distilled, which is heated by a flame; the “head” or “cap” (Arabic anbiḳ, Greek ἄμβιξ) which fits over the mouth of the cucurbit to receive the vapors, with an attached downward-sloping “tube” (Greek σωλήν), leading to the “receiver” (Arabic ḳābila, Greek ἄγγος or φιάλη) container.","@context":"https://schema.org"}</script>
+{"image":"http://localhost:4000/assets/default-social-image.png","url":"http://localhost:4000/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/","headline":"JVM 구조를 알아보도록 하자","dateModified":"2025-04-23T00:00:00+01:00","datePublished":"2025-04-23T00:00:00+01:00","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/assets/logos/logo.svg"},"name":"DavidDarnes"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/"},"author":{"@type":"Person","name":"DavidDarnes"},"@type":"BlogPosting","description":"📚 목차 1. Java Virtual Machine, 자바 실행기 자바는 JVM을 통해 OS로 도달 2. JVM 구성요소 클래스로더 (Class Loader) 실행엔진 (Execution Engine) 인터프리터 JIT 컴파일러 가비지 컬렉터 런타임 데이터 영역 PC Register JVM 스택 Native Method Stack Method Area Heap New/Young 영역 Old 영역 1. Java Virtual Machine, 자바 실행기 📌 자바는 JVM을 통해 OS로 도달 JVM까지의 과정: 자바는 Java Compiler를 통해 .java 파일을 .class 파일로 변환한 다음, 이를 JVM이 처리하여 OS에서 실행. .java → Java Compiler → .class → JVM → OS Java Compiler는 jdk/bin/javac.exe 위치에 있습니다. 2. JVM 구성요소 출처: 위키피디아 2.1 🔹 클래스로더 (Class Loader) JVM 내에서 클래스 파일 및 JAR 내 저장된 클래스를 로드하고, 이를 JVM 위에 탑재. 2.2 🔹 실행엔진 (Execution Engine) Java 바이트코드(.class)를 실제로 실행. 바이트코드는 사람이 보기 편하도록 설계되었으나, 실행엔진이 이를 실제 기계어로 변환. ▶️ 인터프리터 바이트코드를 한 줄씩 읽고 해석하여 실행. ▶️ JIT 컴파일러 Just-In-Time Compilation: 실행 중 바이트코드를 기계어로 번역. 인터프리터 방식의 단점(속도 문제)을 보완. ▶️ 가비지 컬렉터 사용되지 않는 객체를 탐색하여 메모리에서 제거. 메모리 누수를 방지하며, 별도의 정리 글에서 자세히 다룰 예정. 2.3 🔹 런타임 데이터 영역 (Runtime Data Area) 운영체제로부터 할당받은 메모리 공간. 흔히 Method, Heap, Stack 영역으로 알려진 메모리 구조. ▶️ PC Register 각 스레드에 하나씩 생성. 현재 실행 중인 명령어의 위치를 저장. ▶️ JVM 스택 메서드 내 데이터 저장 공간. (예: 매개변수, 지역 변수, 리턴 값 등) ▶️ Native Method Stack 자바가 아닌 타 언어(C, C++ 등)로 작성된 네이티브 코드 실행을 위한 메모리 공간. ▶️ Method Area 클래스 정보 및 클래스 변수 저장 공간. 런타임 상수 풀(Runtime Constant Pool)에서 상수 관리. ▶️ Heap 객체와 배열을 저장하는 메모리 공간. 🔸 New/Young 영역 생명 주기가 짧은 객체를 저장. 가비지 컬렉션(GC)에 의해 정리되며, Minor GC로 처리. 구성: Eden 영역: 객체가 최초로 생성되는 장소. Survivor 영역(Survivor 0, Survivor 1): Eden에서 살아남은 객체들이 이동. 🔸 Old 영역 생명 주기가 긴 객체를 저장. Major GC로 정리되며, Minor GC보다 속도가 느림.","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
     
@@ -97,7 +97,7 @@
 
   </head>
 
-  <body class="layout-post  description-of-an-alembic">
+  <body class="layout-post  jvm-구조를-알아보도록-하자">
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="height: 0; position: absolute">
   <symbol id="codepen" viewBox="0 0 16 16"><path d="M15.988 5.443c-.004-.02-.007-.04-.012-.058l-.01-.033c-.006-.017-.012-.034-.02-.05-.003-.012-.01-.023-.014-.034l-.023-.045-.02-.032-.03-.04-.024-.03c-.01-.013-.022-.026-.034-.038l-.027-.027-.04-.032-.03-.024-.012-.01L8.38.117c-.23-.155-.53-.155-.76 0L.305 4.99.296 5c-.012.007-.022.015-.032.023-.014.01-.027.02-.04.032l-.027.027-.034.037-.024.03-.03.04c-.006.012-.013.022-.02.033l-.023.045-.015.034c-.007.016-.012.033-.018.05l-.01.032c-.005.02-.01.038-.012.058l-.006.03C.002 5.5 0 5.53 0 5.56v4.875c0 .03.002.06.006.09l.007.03c.003.02.006.04.013.058l.01.033c.006.018.01.035.018.05l.015.033c.006.016.014.03.023.047l.02.03c.008.016.018.03.03.042.007.01.014.02.023.03.01.012.02.025.034.036.01.01.018.02.028.026l.04.033.03.023.01.01 7.31 4.876c.116.078.248.117.382.116.134 0 .266-.04.38-.116l7.314-4.875.01-.01c.012-.007.022-.015.032-.023.014-.01.027-.02.04-.032l.027-.027.034-.037.024-.03.03-.04.02-.032.023-.046.015-.033.018-.052.01-.033c.005-.02.01-.038.013-.058 0-.01.003-.02.004-.03.004-.03.006-.06.006-.09V5.564c0-.03-.002-.06-.006-.09l-.007-.03zM8 9.626L5.568 8 8 6.374 10.432 8 8 9.626zM7.312 5.18l-2.98 1.993-2.406-1.61 5.386-3.59v3.206zM3.095 8l-1.72 1.15v-2.3L3.095 8zm1.237.828l2.98 1.993v3.208l-5.386-3.59 2.406-1.61zm4.355 1.993l2.98-1.993 2.407 1.61-5.387 3.59v-3.206zM12.905 8l1.72-1.15v2.3L12.905 8zm-1.237-.827L8.688 5.18V1.97l5.386 3.59-2.406 1.61z" fill-rule="nonzero"/></symbol>
   <symbol id="dribbble" viewBox="0 0 16 16"><path d="M8 16c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm6.747-6.905c-.234-.074-2.115-.635-4.257-.292.894 2.456 1.258 4.456 1.328 4.872 1.533-1.037 2.624-2.68 2.93-4.58zM10.67 14.3c-.102-.6-.5-2.688-1.46-5.18l-.044.014C5.312 10.477 3.93 13.15 3.806 13.4c1.158.905 2.614 1.444 4.194 1.444.947 0 1.85-.194 2.67-.543zm-7.747-1.72c.155-.266 2.03-3.37 5.555-4.51.09-.03.18-.056.27-.08-.173-.39-.36-.778-.555-1.16C4.78 7.85 1.47 7.807 1.17 7.8l-.003.208c0 1.755.665 3.358 1.756 4.57zM1.31 6.61c.307.005 3.122.017 6.318-.832-1.132-2.012-2.353-3.705-2.533-3.952-1.912.902-3.34 2.664-3.784 4.785zM6.4 1.368c.188.253 1.43 1.943 2.548 4 2.43-.91 3.46-2.293 3.582-2.468C11.323 1.827 9.736 1.176 8 1.176c-.55 0-1.087.066-1.6.19zm6.89 2.322c-.145.194-1.29 1.662-3.816 2.694.16.325.31.656.453.99.05.117.1.235.147.352 2.274-.286 4.533.172 4.758.22-.015-1.613-.59-3.094-1.543-4.257z"/></symbol>
@@ -218,27 +218,156 @@
 
   <article class="article  article--post  content  typeset">
 
-    <h1>Description of an Alembic</h1>
+    <h1>JVM 구조를 알아보도록 하자</h1>
     
 
 <small class="small  post-meta">
   
   
     
-      <span class="label  label--category"><a href="/categories/#general">General</a></span>,
+      <span class="label  label--category"><a href="/categories/#java">Java</a></span>
     
-      <span class="label  label--category"><a href="/categories/#external-sources">External sources</a></span>
-    
-  &nbsp;&middot;&nbsp;<time datetime="2016-08-27T00:00:00+01:00" class="time">27 Aug 2016</time>
+  &nbsp;&middot;&nbsp;<time datetime="2025-04-23T00:00:00+01:00" class="time">23 Apr 2025</time>
 </small>
 
-    <p>The complete distilling apparatus consists of three parts: the “cucurbit” (Arabic ḳarʿa, Greek βίκος), the still pot containing the liquid to be distilled, which is heated by a flame; the “head” or “cap” (Arabic anbiḳ, Greek ἄμβιξ) which fits over the mouth of the cucurbit to receive the vapors, with an attached downward-sloping “tube” (Greek σωλήν), leading to the “receiver” (Arabic ḳābila, Greek ἄγγος or φιάλη) container.</p>
+    <h2 id="-목차">📚 목차</h2>
 
-<!-- more -->
+<h3 id="1-java-virtual-machine-자바-실행기">1. <a href="#1-java-virtual-machine-자바-실행기">Java Virtual Machine, 자바 실행기</a></h3>
+<ul>
+  <li><a href="#자바는-jvm을-통해-os로-도달">자바는 JVM을 통해 OS로 도달</a></li>
+</ul>
 
-<p>Retorts have the “cap” and the “cucurbit” made into one. The anbik is also called the raʾs (head) of the cucurbit. The liquid in the cucurbit is heated or boiled; the vapour rises into the anbik, where it cools by contact with the walls and condenses, running down the spout into the receiver. A modern descendant of the alembic is the pot still, used to produce distilled beverages.</p>
+<h3 id="2-jvm-구성요소">2. <a href="#2-jvm-구성요소">JVM 구성요소</a></h3>
+<ul>
+  <li><a href="#클래스로더-class-loader">클래스로더 (Class Loader)</a></li>
+  <li><a href="#실행엔진-execution-engine">실행엔진 (Execution Engine)</a>
+    <ul>
+      <li><a href="#인터프리터">인터프리터</a></li>
+      <li><a href="#jit-컴파일러">JIT 컴파일러</a></li>
+      <li><a href="#가비지-컬렉터">가비지 컬렉터</a></li>
+    </ul>
+  </li>
+  <li><a href="#런타임-데이터-영역">런타임 데이터 영역</a>
+    <ul>
+      <li><a href="#pc-register">PC Register</a></li>
+      <li><a href="#jvm-스택">JVM 스택</a></li>
+      <li><a href="#native-method-stack">Native Method Stack</a></li>
+      <li><a href="#method-area">Method Area</a></li>
+      <li><a href="#heap">Heap</a>
+        <ul>
+          <li><a href="#newyoung-영역">New/Young 영역</a></li>
+          <li><a href="#old-영역">Old 영역</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
 
-<p><em>Originally from <a href="https://en.wikipedia.org/wiki/Alembic">Alembic - Wikipedia</a></em></p>
+<hr />
+
+<h2 id="1-java-virtual-machine-자바-실행기-1">1. Java Virtual Machine, 자바 실행기</h2>
+
+<h3 id="-자바는-jvm을-통해-os로-도달">📌 자바는 JVM을 통해 OS로 도달</h3>
+<ul>
+  <li><strong>JVM까지의 과정</strong>: 자바는 Java Compiler를 통해 <code class="language-plaintext highlighter-rouge">.java</code> 파일을 <code class="language-plaintext highlighter-rouge">.class</code> 파일로 변환한 다음, 이를 JVM이 처리하여 OS에서 실행.
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">.java → Java Compiler → .class → JVM → OS</code></li>
+    </ul>
+  </li>
+  <li>Java Compiler는 <code class="language-plaintext highlighter-rouge">jdk/bin/javac.exe</code> 위치에 있습니다.</li>
+</ul>
+
+<hr />
+
+<h2 id="2-jvm-구성요소-1">2. JVM 구성요소</h2>
+
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/d/dd/JvmSpec7.png" alt="JVM 구조" />
+<em>출처: 위키피디아</em></p>
+
+<h3 id="21--클래스로더-class-loader">2.1 🔹 클래스로더 (Class Loader)</h3>
+<ul>
+  <li>JVM 내에서 클래스 파일 및 JAR 내 저장된 클래스를 로드하고, 이를 JVM 위에 탑재.</li>
+</ul>
+
+<hr />
+
+<h3 id="22--실행엔진-execution-engine">2.2 🔹 실행엔진 (Execution Engine)</h3>
+<ul>
+  <li>Java 바이트코드(<code class="language-plaintext highlighter-rouge">.class</code>)를 실제로 실행.</li>
+  <li>바이트코드는 사람이 보기 편하도록 설계되었으나, 실행엔진이 이를 실제 기계어로 변환.</li>
+</ul>
+
+<h4 id="️-인터프리터">▶️ <strong>인터프리터</strong></h4>
+<ul>
+  <li>바이트코드를 한 줄씩 읽고 해석하여 실행.</li>
+</ul>
+
+<h4 id="️-jit-컴파일러">▶️ <strong>JIT 컴파일러</strong></h4>
+<ul>
+  <li><strong>Just-In-Time Compilation</strong>: 실행 중 바이트코드를 기계어로 번역.</li>
+  <li>인터프리터 방식의 단점(속도 문제)을 보완.</li>
+</ul>
+
+<h4 id="️-가비지-컬렉터">▶️ <strong>가비지 컬렉터</strong></h4>
+<ul>
+  <li>사용되지 않는 객체를 탐색하여 메모리에서 제거.</li>
+  <li>메모리 누수를 방지하며, 별도의 정리 글에서 자세히 다룰 예정.</li>
+</ul>
+
+<hr />
+
+<h3 id="23--런타임-데이터-영역-runtime-data-area">2.3 🔹 런타임 데이터 영역 (Runtime Data Area)</h3>
+<ul>
+  <li>운영체제로부터 할당받은 메모리 공간.</li>
+  <li>흔히 Method, Heap, Stack 영역으로 알려진 메모리 구조.</li>
+</ul>
+
+<hr />
+
+<h4 id="️-pc-register">▶️ <strong>PC Register</strong></h4>
+<ul>
+  <li>각 스레드에 하나씩 생성.</li>
+  <li>현재 실행 중인 명령어의 위치를 저장.</li>
+</ul>
+
+<h4 id="️-jvm-스택">▶️ <strong>JVM 스택</strong></h4>
+<ul>
+  <li>메서드 내 데이터 저장 공간. (예: 매개변수, 지역 변수, 리턴 값 등)</li>
+</ul>
+
+<h4 id="️-native-method-stack">▶️ <strong>Native Method Stack</strong></h4>
+<ul>
+  <li>자바가 아닌 타 언어(C, C++ 등)로 작성된 네이티브 코드 실행을 위한 메모리 공간.</li>
+</ul>
+
+<h4 id="️-method-area">▶️ <strong>Method Area</strong></h4>
+<ul>
+  <li>클래스 정보 및 클래스 변수 저장 공간.</li>
+  <li>런타임 상수 풀(Runtime Constant Pool)에서 상수 관리.</li>
+</ul>
+
+<h4 id="️-heap">▶️ <strong>Heap</strong></h4>
+<ul>
+  <li><strong>객체와 배열</strong>을 저장하는 메모리 공간.</li>
+</ul>
+
+<h5 id="-newyoung-영역">🔸 <strong>New/Young 영역</strong></h5>
+<ul>
+  <li>생명 주기가 짧은 객체를 저장.</li>
+  <li>가비지 컬렉션(GC)에 의해 정리되며, <strong>Minor GC</strong>로 처리.</li>
+  <li>구성:
+    <ul>
+      <li><strong>Eden 영역</strong>: 객체가 최초로 생성되는 장소.</li>
+      <li><strong>Survivor 영역(Survivor 0, Survivor 1)</strong>: Eden에서 살아남은 객체들이 이동.</li>
+    </ul>
+  </li>
+</ul>
+
+<h5 id="-old-영역">🔸 <strong>Old 영역</strong></h5>
+<ul>
+  <li>생명 주기가 긴 객체를 저장.</li>
+  <li><strong>Major GC</strong>로 정리되며, Minor GC보다 속도가 느림.</li>
+</ul>
 
 
     <div class="share">
@@ -251,7 +380,7 @@
 
       
 
-      <a class="button" href="https://twitter.com/intent/tweet/?url=http://localhost:4000/general/external%20sources/2016/08/27/example-post-one/&text=Description%20of%20an%20Alembic&via=DavidDarnes" style="background: #0d94e7">Twitter&nbsp; <svg width="16" height="16" class="icon  icon--twitter" role="img" alt="twitter"><title>twitter</title><use xlink:href="#twitter" fill="CurrentColor"></use></svg>
+      <a class="button" href="https://twitter.com/intent/tweet/?url=http://localhost:4000/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/&text=JVM%20%EA%B5%AC%EC%A1%B0%EB%A5%BC%20%EC%95%8C%EC%95%84%EB%B3%B4%EB%8F%84%EB%A1%9D%20%ED%95%98%EC%9E%90&via=DavidDarnes" style="background: #0d94e7">Twitter&nbsp; <svg width="16" height="16" class="icon  icon--twitter" role="img" alt="twitter"><title>twitter</title><use xlink:href="#twitter" fill="CurrentColor"></use></svg>
 </a>
 
     
@@ -264,7 +393,7 @@
 
       
 
-      <a class="button" href="https://facebook.com/sharer/sharer.php?u=http://localhost:4000/general/external%20sources/2016/08/27/example-post-one/" style="background: #3B5998">facebook&nbsp; <svg width="16" height="16" class="icon  icon--facebook" role="img" alt="facebook"><title>facebook</title><use xlink:href="#facebook" fill="CurrentColor"></use></svg>
+      <a class="button" href="https://facebook.com/sharer/sharer.php?u=http://localhost:4000/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/" style="background: #3B5998">facebook&nbsp; <svg width="16" height="16" class="icon  icon--facebook" role="img" alt="facebook"><title>facebook</title><use xlink:href="#facebook" fill="CurrentColor"></use></svg>
 </a>
 
     
@@ -277,7 +406,7 @@
 
       
 
-      <a class="button" href="mailto:?subject=Description of an Alembic&body=Hey, check out this: http://localhost:4000/general/external%20sources/2016/08/27/example-post-one/" style="background: true">Email&nbsp; <svg width="16" height="16" class="icon  icon--email" role="img" alt="email"><title>email</title><use xlink:href="#email" fill="CurrentColor"></use></svg>
+      <a class="button" href="mailto:?subject=JVM 구조를 알아보도록 하자&body=Hey, check out this: http://localhost:4000/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/" style="background: true">Email&nbsp; <svg width="16" height="16" class="icon  icon--email" role="img" alt="email"><title>email</title><use xlink:href="#email" fill="CurrentColor"></use></svg>
 </a>
 
     

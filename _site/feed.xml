@@ -1,19 +1,138 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en-GB"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="en-GB" /><updated>2025-04-22T09:03:01+01:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">개발자 블로그</title><subtitle>Alembic is a starting point for Jekyll projects. Rather than starting from scratch, this boilerplate is designed to get the ball rolling immediately</subtitle><author><name>DavidDarnes</name></author><entry><title type="html">이건 세번째 글</title><link href="http://localhost:4000/general/2016/08/29/example-post-three/" rel="alternate" type="text/html" title="이건 세번째 글" /><published>2016-08-29T00:00:00+01:00</published><updated>2016-08-29T00:00:00+01:00</updated><id>http://localhost:4000/general/2016/08/29/example-post-three</id><content type="html" xml:base="http://localhost:4000/general/2016/08/29/example-post-three/"><![CDATA[<p>A pot still is a type of still used in distilling spirits such as whisky or brandy. Heat is applied directly to the pot containing the wash (for whisky) or wine (for brandy). This is called a batch distillation (as opposed to a continuous distillation).</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en-GB"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="en-GB" /><updated>2025-04-24T02:17:15+01:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">개발자 블로그</title><subtitle>Alembic is a starting point for Jekyll projects. Rather than starting from scratch, this boilerplate is designed to get the ball rolling immediately</subtitle><author><name>DavidDarnes</name></author><entry><title type="html">JVM 구조를 알아보도록 하자</title><link href="http://localhost:4000/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/" rel="alternate" type="text/html" title="JVM 구조를 알아보도록 하자" /><published>2025-04-23T00:00:00+01:00</published><updated>2025-04-23T00:00:00+01:00</updated><id>http://localhost:4000/java/2025/04/23/JVM%20%EA%B5%AC%EC%A1%B01</id><content type="html" xml:base="http://localhost:4000/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/"><![CDATA[<h2 id="-목차">📚 목차</h2>
 
-<p>At standard atmospheric pressure, alcohol boils at 78 °C (172 °F), while water boils at 100 °C (212 °F). During distillation, the vapour contains more alcohol than the liquid. When the vapours are condensed, the resulting liquid contains a higher concentration of alcohol. In the pot still, the alcohol and water vapour combine with esters and flow from the still through the condensing coil. There they condense into the first distillation liquid, the so-called “low wines”. The low wines have a strength of about 25–35% alcohol by volume, and flow into a second still. It is then distilled a second time to produce the colourless spirit, collected at about 70% alcohol by volume. Colour is added through maturation in an oak aging barrel, and develops over time.</p>
+<h3 id="1-java-virtual-machine-자바-실행기">1. <a href="#1-java-virtual-machine-자바-실행기">Java Virtual Machine, 자바 실행기</a></h3>
+<ul>
+  <li><a href="#자바는-jvm을-통해-os로-도달">자바는 JVM을 통해 OS로 도달</a></li>
+</ul>
 
-<p>The modern pot still is a descendant of the alembic, an earlier distillation device.</p>]]></content><author><name>DavidDarnes</name></author><category term="General" /><summary type="html"><![CDATA[A pot still is a type of still used in distilling spirits such as whisky or brandy. Heat is applied directly to the pot containing the wash (for whisky) or wine (for brandy).]]></summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://picsum.photos/2560/600?image=733" /><media:content medium="image" url="https://picsum.photos/2560/600?image=733" xmlns:media="http://search.yahoo.com/mrss/" /></entry><entry><title type="html">History of the Alembic</title><link href="http://localhost:4000/history/external%20sources/2016/08/28/example-post-two/" rel="alternate" type="text/html" title="History of the Alembic" /><published>2016-08-28T00:00:00+01:00</published><updated>2016-08-28T00:00:00+01:00</updated><id>http://localhost:4000/history/external%20sources/2016/08/28/example-post-two</id><content type="html" xml:base="http://localhost:4000/history/external%20sources/2016/08/28/example-post-two/"><![CDATA[<p>Dioscorides’ ambix (described in his De materia medica) is a helmet-shaped lid for gathering condensed mercury. For Athenaeus (~ 225 C.E.) it is a bottle or flask. For later chemists it denotes various parts of crude distillation devices.</p>
+<h3 id="2-jvm-구성요소">2. <a href="#2-jvm-구성요소">JVM 구성요소</a></h3>
+<ul>
+  <li><a href="#클래스로더-class-loader">클래스로더 (Class Loader)</a></li>
+  <li><a href="#실행엔진-execution-engine">실행엔진 (Execution Engine)</a>
+    <ul>
+      <li><a href="#인터프리터">인터프리터</a></li>
+      <li><a href="#jit-컴파일러">JIT 컴파일러</a></li>
+      <li><a href="#가비지-컬렉터">가비지 컬렉터</a></li>
+    </ul>
+  </li>
+  <li><a href="#런타임-데이터-영역">런타임 데이터 영역</a>
+    <ul>
+      <li><a href="#pc-register">PC Register</a></li>
+      <li><a href="#jvm-스택">JVM 스택</a></li>
+      <li><a href="#native-method-stack">Native Method Stack</a></li>
+      <li><a href="#method-area">Method Area</a></li>
+      <li><a href="#heap">Heap</a>
+        <ul>
+          <li><a href="#newyoung-영역">New/Young 영역</a></li>
+          <li><a href="#old-영역">Old 영역</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
 
-<!-- more -->
+<hr />
 
-<p>Alembic drawings appear in works of Cleopatra the Alchemist, Synesius, and Zosimos of Panopolis. There were alembics with two (dibikos) and three (tribikos) receivers.[4] According to Zosimos of Panopolis, the alembic was invented by Mary the Jewess.[5]</p>
+<h2 id="1-java-virtual-machine-자바-실행기-1">1. Java Virtual Machine, 자바 실행기</h2>
 
-<p>The anbik is described by Ibn al-Awwam in his Kitab al-Filaha (Book of Agriculture), where he explains how rose-water is distilled. Amongst others, it is mentioned in the Mafatih al-Ulum (Key of Sciences) of Khwarizmi and the Kitab al-Asrar (Book of Secrets) of Al-Razi. Some illustrations occur in the Latin translations of works which are attributed to Geber.[2]</p>
+<h3 id="-자바는-jvm을-통해-os로-도달">📌 자바는 JVM을 통해 OS로 도달</h3>
+<ul>
+  <li><strong>JVM까지의 과정</strong>: 자바는 Java Compiler를 통해 <code class="language-plaintext highlighter-rouge">.java</code> 파일을 <code class="language-plaintext highlighter-rouge">.class</code> 파일로 변환한 다음, 이를 JVM이 처리하여 OS에서 실행.
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">.java → Java Compiler → .class → JVM → OS</code></li>
+    </ul>
+  </li>
+  <li>Java Compiler는 <code class="language-plaintext highlighter-rouge">jdk/bin/javac.exe</code> 위치에 있습니다.</li>
+</ul>
 
-<p><em>Originally from <a href="https://en.wikipedia.org/wiki/Alembic">Alembic - Wikipedia</a></em></p>]]></content><author><name>DavidDarnes</name></author><category term="History" /><category term="External sources" /><summary type="html"><![CDATA[Dioscorides’ ambix (described in his De materia medica) is a helmet-shaped lid for gathering condensed mercury. For Athenaeus (~ 225 C.E.) it is a bottle or flask. For later chemists it denotes various parts of crude distillation devices.]]></summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="http://localhost:4000/assets/default-social-image.png" /><media:content medium="image" url="http://localhost:4000/assets/default-social-image.png" xmlns:media="http://search.yahoo.com/mrss/" /></entry><entry><title type="html">Description of an Alembic</title><link href="http://localhost:4000/general/external%20sources/2016/08/27/example-post-one/" rel="alternate" type="text/html" title="Description of an Alembic" /><published>2016-08-27T00:00:00+01:00</published><updated>2016-08-27T00:00:00+01:00</updated><id>http://localhost:4000/general/external%20sources/2016/08/27/example-post-one</id><content type="html" xml:base="http://localhost:4000/general/external%20sources/2016/08/27/example-post-one/"><![CDATA[<p>The complete distilling apparatus consists of three parts: the “cucurbit” (Arabic ḳarʿa, Greek βίκος), the still pot containing the liquid to be distilled, which is heated by a flame; the “head” or “cap” (Arabic anbiḳ, Greek ἄμβιξ) which fits over the mouth of the cucurbit to receive the vapors, with an attached downward-sloping “tube” (Greek σωλήν), leading to the “receiver” (Arabic ḳābila, Greek ἄγγος or φιάλη) container.</p>
+<hr />
 
-<!-- more -->
+<h2 id="2-jvm-구성요소-1">2. JVM 구성요소</h2>
 
-<p>Retorts have the “cap” and the “cucurbit” made into one. The anbik is also called the raʾs (head) of the cucurbit. The liquid in the cucurbit is heated or boiled; the vapour rises into the anbik, where it cools by contact with the walls and condenses, running down the spout into the receiver. A modern descendant of the alembic is the pot still, used to produce distilled beverages.</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/d/dd/JvmSpec7.png" alt="JVM 구조" />
+<em>출처: 위키피디아</em></p>
 
-<p><em>Originally from <a href="https://en.wikipedia.org/wiki/Alembic">Alembic - Wikipedia</a></em></p>]]></content><author><name>DavidDarnes</name></author><category term="General" /><category term="External sources" /><summary type="html"><![CDATA[The complete distilling apparatus consists of three parts: the “cucurbit” (Arabic ḳarʿa, Greek βίκος), the still pot containing the liquid to be distilled, which is heated by a flame; the “head” or “cap” (Arabic anbiḳ, Greek ἄμβιξ) which fits over the mouth of the cucurbit to receive the vapors, with an attached downward-sloping “tube” (Greek σωλήν), leading to the “receiver” (Arabic ḳābila, Greek ἄγγος or φιάλη) container.]]></summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="http://localhost:4000/assets/default-social-image.png" /><media:content medium="image" url="http://localhost:4000/assets/default-social-image.png" xmlns:media="http://search.yahoo.com/mrss/" /></entry></feed>
+<h3 id="21--클래스로더-class-loader">2.1 🔹 클래스로더 (Class Loader)</h3>
+<ul>
+  <li>JVM 내에서 클래스 파일 및 JAR 내 저장된 클래스를 로드하고, 이를 JVM 위에 탑재.</li>
+</ul>
+
+<hr />
+
+<h3 id="22--실행엔진-execution-engine">2.2 🔹 실행엔진 (Execution Engine)</h3>
+<ul>
+  <li>Java 바이트코드(<code class="language-plaintext highlighter-rouge">.class</code>)를 실제로 실행.</li>
+  <li>바이트코드는 사람이 보기 편하도록 설계되었으나, 실행엔진이 이를 실제 기계어로 변환.</li>
+</ul>
+
+<h4 id="️-인터프리터">▶️ <strong>인터프리터</strong></h4>
+<ul>
+  <li>바이트코드를 한 줄씩 읽고 해석하여 실행.</li>
+</ul>
+
+<h4 id="️-jit-컴파일러">▶️ <strong>JIT 컴파일러</strong></h4>
+<ul>
+  <li><strong>Just-In-Time Compilation</strong>: 실행 중 바이트코드를 기계어로 번역.</li>
+  <li>인터프리터 방식의 단점(속도 문제)을 보완.</li>
+</ul>
+
+<h4 id="️-가비지-컬렉터">▶️ <strong>가비지 컬렉터</strong></h4>
+<ul>
+  <li>사용되지 않는 객체를 탐색하여 메모리에서 제거.</li>
+  <li>메모리 누수를 방지하며, 별도의 정리 글에서 자세히 다룰 예정.</li>
+</ul>
+
+<hr />
+
+<h3 id="23--런타임-데이터-영역-runtime-data-area">2.3 🔹 런타임 데이터 영역 (Runtime Data Area)</h3>
+<ul>
+  <li>운영체제로부터 할당받은 메모리 공간.</li>
+  <li>흔히 Method, Heap, Stack 영역으로 알려진 메모리 구조.</li>
+</ul>
+
+<hr />
+
+<h4 id="️-pc-register">▶️ <strong>PC Register</strong></h4>
+<ul>
+  <li>각 스레드에 하나씩 생성.</li>
+  <li>현재 실행 중인 명령어의 위치를 저장.</li>
+</ul>
+
+<h4 id="️-jvm-스택">▶️ <strong>JVM 스택</strong></h4>
+<ul>
+  <li>메서드 내 데이터 저장 공간. (예: 매개변수, 지역 변수, 리턴 값 등)</li>
+</ul>
+
+<h4 id="️-native-method-stack">▶️ <strong>Native Method Stack</strong></h4>
+<ul>
+  <li>자바가 아닌 타 언어(C, C++ 등)로 작성된 네이티브 코드 실행을 위한 메모리 공간.</li>
+</ul>
+
+<h4 id="️-method-area">▶️ <strong>Method Area</strong></h4>
+<ul>
+  <li>클래스 정보 및 클래스 변수 저장 공간.</li>
+  <li>런타임 상수 풀(Runtime Constant Pool)에서 상수 관리.</li>
+</ul>
+
+<h4 id="️-heap">▶️ <strong>Heap</strong></h4>
+<ul>
+  <li><strong>객체와 배열</strong>을 저장하는 메모리 공간.</li>
+</ul>
+
+<h5 id="-newyoung-영역">🔸 <strong>New/Young 영역</strong></h5>
+<ul>
+  <li>생명 주기가 짧은 객체를 저장.</li>
+  <li>가비지 컬렉션(GC)에 의해 정리되며, <strong>Minor GC</strong>로 처리.</li>
+  <li>구성:
+    <ul>
+      <li><strong>Eden 영역</strong>: 객체가 최초로 생성되는 장소.</li>
+      <li><strong>Survivor 영역(Survivor 0, Survivor 1)</strong>: Eden에서 살아남은 객체들이 이동.</li>
+    </ul>
+  </li>
+</ul>
+
+<h5 id="-old-영역">🔸 <strong>Old 영역</strong></h5>
+<ul>
+  <li>생명 주기가 긴 객체를 저장.</li>
+  <li><strong>Major GC</strong>로 정리되며, Minor GC보다 속도가 느림.</li>
+</ul>]]></content><author><name>DavidDarnes</name></author><category term="Java" /><summary type="html"><![CDATA[📚 목차 1. Java Virtual Machine, 자바 실행기 자바는 JVM을 통해 OS로 도달 2. JVM 구성요소 클래스로더 (Class Loader) 실행엔진 (Execution Engine) 인터프리터 JIT 컴파일러 가비지 컬렉터 런타임 데이터 영역 PC Register JVM 스택 Native Method Stack Method Area Heap New/Young 영역 Old 영역 1. Java Virtual Machine, 자바 실행기 📌 자바는 JVM을 통해 OS로 도달 JVM까지의 과정: 자바는 Java Compiler를 통해 .java 파일을 .class 파일로 변환한 다음, 이를 JVM이 처리하여 OS에서 실행. .java → Java Compiler → .class → JVM → OS Java Compiler는 jdk/bin/javac.exe 위치에 있습니다. 2. JVM 구성요소 출처: 위키피디아 2.1 🔹 클래스로더 (Class Loader) JVM 내에서 클래스 파일 및 JAR 내 저장된 클래스를 로드하고, 이를 JVM 위에 탑재. 2.2 🔹 실행엔진 (Execution Engine) Java 바이트코드(.class)를 실제로 실행. 바이트코드는 사람이 보기 편하도록 설계되었으나, 실행엔진이 이를 실제 기계어로 변환. ▶️ 인터프리터 바이트코드를 한 줄씩 읽고 해석하여 실행. ▶️ JIT 컴파일러 Just-In-Time Compilation: 실행 중 바이트코드를 기계어로 번역. 인터프리터 방식의 단점(속도 문제)을 보완. ▶️ 가비지 컬렉터 사용되지 않는 객체를 탐색하여 메모리에서 제거. 메모리 누수를 방지하며, 별도의 정리 글에서 자세히 다룰 예정. 2.3 🔹 런타임 데이터 영역 (Runtime Data Area) 운영체제로부터 할당받은 메모리 공간. 흔히 Method, Heap, Stack 영역으로 알려진 메모리 구조. ▶️ PC Register 각 스레드에 하나씩 생성. 현재 실행 중인 명령어의 위치를 저장. ▶️ JVM 스택 메서드 내 데이터 저장 공간. (예: 매개변수, 지역 변수, 리턴 값 등) ▶️ Native Method Stack 자바가 아닌 타 언어(C, C++ 등)로 작성된 네이티브 코드 실행을 위한 메모리 공간. ▶️ Method Area 클래스 정보 및 클래스 변수 저장 공간. 런타임 상수 풀(Runtime Constant Pool)에서 상수 관리. ▶️ Heap 객체와 배열을 저장하는 메모리 공간. 🔸 New/Young 영역 생명 주기가 짧은 객체를 저장. 가비지 컬렉션(GC)에 의해 정리되며, Minor GC로 처리. 구성: Eden 영역: 객체가 최초로 생성되는 장소. Survivor 영역(Survivor 0, Survivor 1): Eden에서 살아남은 객체들이 이동. 🔸 Old 영역 생명 주기가 긴 객체를 저장. Major GC로 정리되며, Minor GC보다 속도가 느림.]]></summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="http://localhost:4000/assets/default-social-image.png" /><media:content medium="image" url="http://localhost:4000/assets/default-social-image.png" xmlns:media="http://search.yahoo.com/mrss/" /></entry></feed>
