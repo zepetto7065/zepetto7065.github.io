@@ -152,17 +152,17 @@ LIMIT 10;
 - offset 이전의 데이터를 full scan 하는 offset 방식보다 cursor 방식 쿼리 성능 측면에서 유리하다.
 - 또한 데이터의 중복이나 누락의 위험도가 없다.
 ```sql
--- 초기 커서
-SELECT * FROM my_table
-WHERE id > 0
-ORDER BY id ASC
-LIMIT 10000;
-
--- 이후 반복
-SELECT * FROM my_table
-WHERE id > :last_processed_id
-ORDER BY id ASC
-LIMIT 10000;
+    -- 초기 커서
+    SELECT * FROM my_table
+    WHERE id > 0
+    ORDER BY id ASC
+    LIMIT 10000;
+    
+    -- 이후 반복
+    SELECT * FROM my_table
+    WHERE id > :last_processed_id
+    ORDER BY id ASC
+    LIMIT 10000;
 ```
 
 ### **단, 반드시 PK의 정렬 기준이 순차적이고 고유해야한다. 그리고 병렬 처리시 범위를 쪼개서 병렬 커서 관리가 필요하다.**
