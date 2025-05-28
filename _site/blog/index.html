@@ -11,27 +11,27 @@
     
       <!-- Begin Jekyll SEO tag v2.7.1 -->
 <meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="개발자 블로그" />
+<meta property="og:title" content="블로그" />
 <meta name="author" content="DavidDarnes" />
 <meta property="og:locale" content="en_GB" />
 <meta name="description" content="Alembic is a starting point for Jekyll projects. Rather than starting from scratch, this boilerplate is designed to get the ball rolling immediately" />
 <meta property="og:description" content="Alembic is a starting point for Jekyll projects. Rather than starting from scratch, this boilerplate is designed to get the ball rolling immediately" />
 <link rel="canonical" href="http://localhost:4000/blog/" />
 <meta property="og:url" content="http://localhost:4000/blog/" />
-<meta property="og:site_name" content="개발자 블로그" />
+<meta property="og:site_name" content="블로그" />
 <meta property="og:image" content="http://localhost:4000/assets/default-social-image.png" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta property="twitter:image" content="http://localhost:4000/assets/default-social-image.png" />
-<meta property="twitter:title" content="개발자 블로그" />
+<meta property="twitter:title" content="블로그" />
 <meta name="twitter:site" content="@DavidDarnes" />
 <meta name="twitter:creator" content="@DavidDarnes" />
 <script type="application/ld+json">
-{"image":"http://localhost:4000/assets/default-social-image.png","url":"http://localhost:4000/blog/","headline":"개발자 블로그","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/assets/logos/logo.svg"},"name":"DavidDarnes"},"author":{"@type":"Person","name":"DavidDarnes"},"@type":"WebPage","description":"Alembic is a starting point for Jekyll projects. Rather than starting from scratch, this boilerplate is designed to get the ball rolling immediately","@context":"https://schema.org"}</script>
+{"image":"http://localhost:4000/assets/default-social-image.png","url":"http://localhost:4000/blog/","headline":"블로그","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/assets/logos/logo.svg"},"name":"DavidDarnes"},"author":{"@type":"Person","name":"DavidDarnes"},"@type":"WebPage","description":"Alembic is a starting point for Jekyll projects. Rather than starting from scratch, this boilerplate is designed to get the ball rolling immediately","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 
       
-      <title>Posts - 개발자 블로그</title>
+      <title>Posts - 블로그</title>
       <meta property="og:title" content="Posts">
       <meta name="description" content="My thoughts and ideas">
       <meta property="og:description" content="My thoughts and ideas">
@@ -130,7 +130,7 @@
     <header class="header">
   <div class="container">
     <a class="logo" href="/">
-  <img src="/assets/logos/logo.svg" alt="개발자 블로그 logo"/>
+  <img src="/assets/logos/logo.svg" alt="블로그 logo"/>
 </a>
 
 
@@ -148,15 +148,8 @@
 
       
 
-      <li class="item  item--nav  item--current">
-        <a href="/blog/">Blog</a>
-      </li>
-    
-
-      
-
       <li class="item  item--nav">
-        <a href="/categories/">Categories</a>
+        <a href="/categories/">Blog</a>
       </li>
     
   </ul>
@@ -240,6 +233,26 @@
         <li class="item  item--post">
           <article class="article  article--post">
 
+            <h2><a href="/implementation/2025/05/18/CursorBasedPaging/">커서 기반 페이징 (Cursor Based Pagination)</a></h2>
+            
+
+<small class="small  post-meta">
+  
+  
+    
+      <span class="label  label--category"><a href="/categories/#implementation">implementation</a></span>
+    
+  &nbsp;&middot;&nbsp;<time datetime="2025-05-18T00:00:00+01:00" class="time">18 May 2025</time>
+</small>
+
+            <h2 id="1-페이지네이션-이란-">1. 페이지네이션 이란 ?</h2> <blockquote> <p>대용량 데이터 처리 방식을 나누다가 나온 주제로 정리를 하기 위해 이 글을 작성합니다.</p> </blockquote> <p>페이지네이션 (Pagination)은 웹 페이지의 컨텐츠를 여러 페이지로 나누는 것을 얘기합니다. 웹 페이지일 수도 있고, 데이터일 수 있습니다.</p> <hr /> <h3 id="조건">조건</h3> <p>페이지네이션을 하기 위한 조건은 아래와 같다.</p> <ol> <li>한 페이지에 얼만큼 보여주어야 하는가 <br /><strong>limit</strong> 혹은 <strong>page size</strong></li> <li>시작점 <br...
+
+          </article>
+        </li>
+      
+        <li class="item  item--post">
+          <article class="article  article--post">
+
             <h2><a href="/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/">JVM 구조를 알아보도록 하자</a></h2>
             
 
@@ -252,7 +265,7 @@
   &nbsp;&middot;&nbsp;<time datetime="2025-04-23T00:00:00+01:00" class="time">23 Apr 2025</time>
 </small>
 
-            <h2 id="-목차">📚 목차</h2> <h3 id="1-java-virtual-machine-자바-실행기">1. <a href="#1-java-virtual-machine-자바-실행기">Java Virtual Machine, 자바 실행기</a></h3> <ul> <li><a href="#자바는-jvm을-통해-os로-도달">자바는 JVM을 통해 OS로 도달</a></li> </ul> <h3 id="2-jvm-구성요소">2. <a href="#2-jvm-구성요소">JVM 구성요소</a></h3> <ul> <li><a href="#클래스로더-class-loader">클래스로더 (Class Loader)</a></li> <li><a href="#실행엔진-execution-engine">실행엔진 (Execution Engine)</a> <ul> <li><a href="#인터프리터">인터프리터</a></li> <li><a href="#jit-컴파일러">JIT 컴파일러</a></li> <li><a href="#가비지-컬렉터">가비지 컬렉터</a></li> </ul> </li> <li><a href="#런타임-데이터-영역">런타임 데이터 영역</a> <ul> <li><a href="#pc-register">PC Register</a></li> <li><a href="#jvm-스택">JVM 스택</a></li> <li><a href="#native-method-stack">Native Method Stack</a></li> <li><a...
+            <hr /> <h2 id="1-java-virtual-machine-자바-실행기">1. Java Virtual Machine, 자바 실행기</h2> <hr /> <h3 id="-자바는-jvm을-통해-os로-도달">📌 자바는 JVM을 통해 OS로 도달</h3> <ul> <li><strong>JVM까지의 과정</strong>: 자바는 Java Compiler를 통해 <code class="language-plaintext highlighter-rouge">.java</code> 파일을 <code class="language-plaintext highlighter-rouge">.class</code> 파일로 변환한 다음, 이를 JVM이 처리하여 OS에서 실행. <ul> <li><code class="language-plaintext highlighter-rouge">.java → Java Compiler → .class → JVM → OS</code></li> </ul> </li> <li>Java Compiler는 <code class="language-plaintext highlighter-rouge">jdk/bin/javac.exe</code>...
 
           </article>
         </li>
@@ -285,7 +298,7 @@
 <footer class="footer">
   <div class="container">
     <div class="copyright  typeset">
-      <small class="small">&copy; 개발자 블로그 2025</small>
+      <small class="small">&copy; 블로그 2025</small>
     </div>
 
     

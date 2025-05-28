@@ -10,24 +10,26 @@
 
     
       <!-- Begin Jekyll SEO tag v2.7.1 -->
-<title>Elements | 블로그</title>
+<title>커서 기반 페이징 (Cursor Based Pagination) | 블로그</title>
 <meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="Elements" />
+<meta property="og:title" content="커서 기반 페이징 (Cursor Based Pagination)" />
 <meta name="author" content="DavidDarnes" />
 <meta property="og:locale" content="en_GB" />
-<meta name="description" content="A demo of Markdown and HTML includes" />
-<meta property="og:description" content="A demo of Markdown and HTML includes" />
-<link rel="canonical" href="http://localhost:4000/elements/" />
-<meta property="og:url" content="http://localhost:4000/elements/" />
+<meta name="description" content="1. 페이지네이션 이란 ? 대용량 데이터 처리 방식을 나누다가 나온 주제로 정리를 하기 위해 이 글을 작성합니다. 페이지네이션 (Pagination)은 웹 페이지의 컨텐츠를 여러 페이지로 나누는 것을 얘기합니다. 웹 페이지일 수도 있고, 데이터일 수 있습니다. 조건 페이지네이션을 하기 위한 조건은 아래와 같다. 한 페이지에 얼만큼 보여주어야 하는가 limit 혹은 page size 시작점 offset 구현 페이지 네이션에는 크게 2가지 구현 방식 존재합니다. 오프셋 기반 (offset based pagination) 커서드 기반 (cursor based pagination) 1. 오프셋 기반 페이징(offset based pagination)이란? 가장 널리 쓰이는 구현 방식, 특정 위치 (시작점, offset)에서 정해진 개수(limit) 만큼 데이터를 조회하는 방식입니다. 장점 구현이 간단하다 관계형베이스 (MySQL, PostgreSQL 등)에서 LIMIT, OFFSET 키워드를 기본 제공한다. SELECT * FROM posts ORDER BY created_at DESC LIMIT 10 //10개씩 가져와 OFFSET 20; //시작점은 20부터 //Oracle 12c 이상에서는 FETCH FIRST, OFFSEt 같은 구문을 지원한다. SELECT * FROM posts ORDER BY created_at DESC OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY; //Oracle 11g 이하에서는 서브쿼로 우회를 해야함; //21~30번째 행을 조회 SELECT * FROM ( SELECT a.*, ROWNUM rnum FROM ( SELECT * FROM posts ORDER BY created_at DESC ) a WHERE ROWNUM &lt;= 30 ) WHERE rnum &gt; 20; 조금 이따 얘기하겠지만 이전 페이지의 상태를 기억할 필요가 없이, limit와 page만 넘기면 된다. Spring JPA, Django ORM 과 같은 프레임워크에서 .findAll({offset, limit}) 같은 옵션을 주면 간단히 구현이 된다. 단점 데이터 변경 문제 오프셋의 문제는 몇개부터 몇개를 잘라오는 방식이기 때문에, 데이터가 중간에 추가가 되거나 삭제가 되면 중복 문제가 발생한다. 예를 들어 A가 1~10번 페이지를 먼저 조회 B가 1번 글을 삭제를 함 A가 다음 페이지인 11번~20번을 조회하였지만 1번 글이 삭제되어 10번부터 19번까지 조회 10번의 글이 중복으로 조회가 됨. 대용량의 경우, 성능 문제가 존재 사실 이 글을 쓰게된 핵심 이유가 여기 있다. OFFSET은 DB 내부적으로 앞의 데이터를 전부 스캔 (FULL SCAN) 후에 건너띄는 방식이라, OFFSET이 크다면 성능이 떨어질수 있다. 예를 들어 OFFSET 방식에 의해 1000001번째 ~ 1000010번째 데이터를 조회한다고 하면, 앞의 100만개의 데이터를 FULL 스캔을 해야하는 것이다. 2. 커서 기반 페이징 (Cursor Based Pagination) 위 단점을 보완할 수 있는게 커서 기반 페이징 방식이다. 커서 기반 페이징(Cursor Based Pagination)은 어디서 시작할지 명확히 하는 방식이다. 커서 기반은 정렬의 기준이 되는 값이 필요한데, 이를 커서 (Cursor)라고 한다. SELECT * FROM posts WHERE created_at &lt; &#39;2024-01-01 12:00:00&#39; //&#39;2024-01-01 12:00:00&#39; 가 커서이다. 해당 시점 이전 글 10개를 조회 ORDER BY created_at DESC LIMIT 10; 장점 데이터 중복 문제 해결 상황을 가정해보자. A 사용자가 최근 글 10개 1페이지를 본 이후 B 사용자가 글 하나를 삭제 &gt; A 사용자가 2 페이지 요청 -- 1페이지 SELECT * FROM posts ORDER BY id DESC LIMIT 10; -- 2페이지 (A는 마지막 글의 id = 1000 을 커서로 기억하고 있음) SELECT * FROM posts WHERE id &lt; 1000 //1000이 커서다 ORDER BY id DESC LIMIT 10; 어떤 값을 커서로 쓸건지도 고민해볼 대상이다. 날짜와 같은 값도 cursor가 될수 있지만, 고유성이 보장되고, 인덱싱이 되는 인자면 더욱 유리할 것. 또한 카디널리티가 낮은 (중복도가 높은) 인자가 검색에 유리할 것이다. 단 id 의 생성 순서가 보장되어야한다. UUID와 같은 랜덤한 값은 페이징하기 적절치 않다. 성능이 보다 좋다. 커서 기반은 무작정으로 앞에서 풀스캔을 하지 않는다. -- created_at에 인덱스가 있다면, 아래는 범위 조회로 빠르게 동작 SELECT * FROM posts WHERE created_at &lt; &#39;2024-12-31 23:59:59&#39; ORDER BY created_at DESC LIMIT 10; 100만건의 유저의 수를 가지고 있는 테이블 조회 성능 비교 offset (928ms) 보다 cursor (472ms)로 두배의 성능 차이를 보인다. 단점 이전 페이지로의 이동이 어렵다. 이전 페이지로 이동을 하려면 커서를 되짚을 방법이 필요하다. A가 3페이지를 갔다가 2페이지로 돌아가려한다. 2페이지의 마지막 글을 기억하고 정렬을 반대로하여, Limit 만큼 뽑아낸다. -- created_at이 &#39;2024-01-01&#39;인 경우 이전 페이지를 보려면 //2페이지의 마지막 글이 12/30 23:59:59 에 작성되었다 가정하면 SELECT * FROM posts WHERE created_at &gt; &#39;2024-12-30 23:59:59&#39; ORDER BY created_at ASC LIMIT 10; 오프셋처럼 특정 페이지 번호로 직접 이동 불가 9페이지 주세요 같은 특정 페이지로 이동은 불가하다. 3. 언제 cursor 기반이 좋을까? SNS 피드, 채팅 로그 등 무한 스크롤 같은 경우, 커서 페이징의 단점을 띄기 어려운 구조이며 실시간성으로 데이터가 자주 변하는 시스템의 경우 적절하다 4. 대용량 배치는 어떨까? 정산 같은 도메인을 개발하다 보면 하루에 수십 만건에서 수억건에 해당하는 데이터를 조회하는 경우가 있다. offset 이전의 데이터를 full scan 하는 offset 방식보다 cursor 방식 쿼리 성능 측면에서 유리하다. 또한 데이터의 중복이나 누락의 위험도가 없다. ```sql – 초기 커서 SELECT * FROM my_table WHERE id &gt; 0 ORDER BY id ASC LIMIT 10000; – 이후 반복 SELECT * FROM my_table WHERE id &gt; :last_processed_id ORDER BY id ASC LIMIT 10000; ``` 단, 반드시 PK의 정렬 기준이 순차적이고 고유해야한다. 그리고 병렬 처리시 범위를 쪼개서 병렬 커서 관리가 필요하다." />
+<meta property="og:description" content="1. 페이지네이션 이란 ? 대용량 데이터 처리 방식을 나누다가 나온 주제로 정리를 하기 위해 이 글을 작성합니다. 페이지네이션 (Pagination)은 웹 페이지의 컨텐츠를 여러 페이지로 나누는 것을 얘기합니다. 웹 페이지일 수도 있고, 데이터일 수 있습니다. 조건 페이지네이션을 하기 위한 조건은 아래와 같다. 한 페이지에 얼만큼 보여주어야 하는가 limit 혹은 page size 시작점 offset 구현 페이지 네이션에는 크게 2가지 구현 방식 존재합니다. 오프셋 기반 (offset based pagination) 커서드 기반 (cursor based pagination) 1. 오프셋 기반 페이징(offset based pagination)이란? 가장 널리 쓰이는 구현 방식, 특정 위치 (시작점, offset)에서 정해진 개수(limit) 만큼 데이터를 조회하는 방식입니다. 장점 구현이 간단하다 관계형베이스 (MySQL, PostgreSQL 등)에서 LIMIT, OFFSET 키워드를 기본 제공한다. SELECT * FROM posts ORDER BY created_at DESC LIMIT 10 //10개씩 가져와 OFFSET 20; //시작점은 20부터 //Oracle 12c 이상에서는 FETCH FIRST, OFFSEt 같은 구문을 지원한다. SELECT * FROM posts ORDER BY created_at DESC OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY; //Oracle 11g 이하에서는 서브쿼로 우회를 해야함; //21~30번째 행을 조회 SELECT * FROM ( SELECT a.*, ROWNUM rnum FROM ( SELECT * FROM posts ORDER BY created_at DESC ) a WHERE ROWNUM &lt;= 30 ) WHERE rnum &gt; 20; 조금 이따 얘기하겠지만 이전 페이지의 상태를 기억할 필요가 없이, limit와 page만 넘기면 된다. Spring JPA, Django ORM 과 같은 프레임워크에서 .findAll({offset, limit}) 같은 옵션을 주면 간단히 구현이 된다. 단점 데이터 변경 문제 오프셋의 문제는 몇개부터 몇개를 잘라오는 방식이기 때문에, 데이터가 중간에 추가가 되거나 삭제가 되면 중복 문제가 발생한다. 예를 들어 A가 1~10번 페이지를 먼저 조회 B가 1번 글을 삭제를 함 A가 다음 페이지인 11번~20번을 조회하였지만 1번 글이 삭제되어 10번부터 19번까지 조회 10번의 글이 중복으로 조회가 됨. 대용량의 경우, 성능 문제가 존재 사실 이 글을 쓰게된 핵심 이유가 여기 있다. OFFSET은 DB 내부적으로 앞의 데이터를 전부 스캔 (FULL SCAN) 후에 건너띄는 방식이라, OFFSET이 크다면 성능이 떨어질수 있다. 예를 들어 OFFSET 방식에 의해 1000001번째 ~ 1000010번째 데이터를 조회한다고 하면, 앞의 100만개의 데이터를 FULL 스캔을 해야하는 것이다. 2. 커서 기반 페이징 (Cursor Based Pagination) 위 단점을 보완할 수 있는게 커서 기반 페이징 방식이다. 커서 기반 페이징(Cursor Based Pagination)은 어디서 시작할지 명확히 하는 방식이다. 커서 기반은 정렬의 기준이 되는 값이 필요한데, 이를 커서 (Cursor)라고 한다. SELECT * FROM posts WHERE created_at &lt; &#39;2024-01-01 12:00:00&#39; //&#39;2024-01-01 12:00:00&#39; 가 커서이다. 해당 시점 이전 글 10개를 조회 ORDER BY created_at DESC LIMIT 10; 장점 데이터 중복 문제 해결 상황을 가정해보자. A 사용자가 최근 글 10개 1페이지를 본 이후 B 사용자가 글 하나를 삭제 &gt; A 사용자가 2 페이지 요청 -- 1페이지 SELECT * FROM posts ORDER BY id DESC LIMIT 10; -- 2페이지 (A는 마지막 글의 id = 1000 을 커서로 기억하고 있음) SELECT * FROM posts WHERE id &lt; 1000 //1000이 커서다 ORDER BY id DESC LIMIT 10; 어떤 값을 커서로 쓸건지도 고민해볼 대상이다. 날짜와 같은 값도 cursor가 될수 있지만, 고유성이 보장되고, 인덱싱이 되는 인자면 더욱 유리할 것. 또한 카디널리티가 낮은 (중복도가 높은) 인자가 검색에 유리할 것이다. 단 id 의 생성 순서가 보장되어야한다. UUID와 같은 랜덤한 값은 페이징하기 적절치 않다. 성능이 보다 좋다. 커서 기반은 무작정으로 앞에서 풀스캔을 하지 않는다. -- created_at에 인덱스가 있다면, 아래는 범위 조회로 빠르게 동작 SELECT * FROM posts WHERE created_at &lt; &#39;2024-12-31 23:59:59&#39; ORDER BY created_at DESC LIMIT 10; 100만건의 유저의 수를 가지고 있는 테이블 조회 성능 비교 offset (928ms) 보다 cursor (472ms)로 두배의 성능 차이를 보인다. 단점 이전 페이지로의 이동이 어렵다. 이전 페이지로 이동을 하려면 커서를 되짚을 방법이 필요하다. A가 3페이지를 갔다가 2페이지로 돌아가려한다. 2페이지의 마지막 글을 기억하고 정렬을 반대로하여, Limit 만큼 뽑아낸다. -- created_at이 &#39;2024-01-01&#39;인 경우 이전 페이지를 보려면 //2페이지의 마지막 글이 12/30 23:59:59 에 작성되었다 가정하면 SELECT * FROM posts WHERE created_at &gt; &#39;2024-12-30 23:59:59&#39; ORDER BY created_at ASC LIMIT 10; 오프셋처럼 특정 페이지 번호로 직접 이동 불가 9페이지 주세요 같은 특정 페이지로 이동은 불가하다. 3. 언제 cursor 기반이 좋을까? SNS 피드, 채팅 로그 등 무한 스크롤 같은 경우, 커서 페이징의 단점을 띄기 어려운 구조이며 실시간성으로 데이터가 자주 변하는 시스템의 경우 적절하다 4. 대용량 배치는 어떨까? 정산 같은 도메인을 개발하다 보면 하루에 수십 만건에서 수억건에 해당하는 데이터를 조회하는 경우가 있다. offset 이전의 데이터를 full scan 하는 offset 방식보다 cursor 방식 쿼리 성능 측면에서 유리하다. 또한 데이터의 중복이나 누락의 위험도가 없다. ```sql – 초기 커서 SELECT * FROM my_table WHERE id &gt; 0 ORDER BY id ASC LIMIT 10000; – 이후 반복 SELECT * FROM my_table WHERE id &gt; :last_processed_id ORDER BY id ASC LIMIT 10000; ``` 단, 반드시 PK의 정렬 기준이 순차적이고 고유해야한다. 그리고 병렬 처리시 범위를 쪼개서 병렬 커서 관리가 필요하다." />
+<link rel="canonical" href="http://localhost:4000/implementation/2025/05/18/CursorBasedPaging/" />
+<meta property="og:url" content="http://localhost:4000/implementation/2025/05/18/CursorBasedPaging/" />
 <meta property="og:site_name" content="블로그" />
 <meta property="og:image" content="http://localhost:4000/assets/default-social-image.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-05-18T00:00:00+01:00" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta property="twitter:image" content="http://localhost:4000/assets/default-social-image.png" />
-<meta property="twitter:title" content="Elements" />
+<meta property="twitter:title" content="커서 기반 페이징 (Cursor Based Pagination)" />
 <meta name="twitter:site" content="@DavidDarnes" />
 <meta name="twitter:creator" content="@DavidDarnes" />
 <script type="application/ld+json">
-{"image":"http://localhost:4000/assets/default-social-image.png","url":"http://localhost:4000/elements/","headline":"Elements","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/assets/logos/logo.svg"},"name":"DavidDarnes"},"author":{"@type":"Person","name":"DavidDarnes"},"@type":"WebPage","description":"A demo of Markdown and HTML includes","@context":"https://schema.org"}</script>
+{"image":"http://localhost:4000/assets/default-social-image.png","url":"http://localhost:4000/implementation/2025/05/18/CursorBasedPaging/","headline":"커서 기반 페이징 (Cursor Based Pagination)","dateModified":"2025-05-18T00:00:00+01:00","datePublished":"2025-05-18T00:00:00+01:00","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/assets/logos/logo.svg"},"name":"DavidDarnes"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/implementation/2025/05/18/CursorBasedPaging/"},"author":{"@type":"Person","name":"DavidDarnes"},"@type":"BlogPosting","description":"1. 페이지네이션 이란 ? 대용량 데이터 처리 방식을 나누다가 나온 주제로 정리를 하기 위해 이 글을 작성합니다. 페이지네이션 (Pagination)은 웹 페이지의 컨텐츠를 여러 페이지로 나누는 것을 얘기합니다. 웹 페이지일 수도 있고, 데이터일 수 있습니다. 조건 페이지네이션을 하기 위한 조건은 아래와 같다. 한 페이지에 얼만큼 보여주어야 하는가 limit 혹은 page size 시작점 offset 구현 페이지 네이션에는 크게 2가지 구현 방식 존재합니다. 오프셋 기반 (offset based pagination) 커서드 기반 (cursor based pagination) 1. 오프셋 기반 페이징(offset based pagination)이란? 가장 널리 쓰이는 구현 방식, 특정 위치 (시작점, offset)에서 정해진 개수(limit) 만큼 데이터를 조회하는 방식입니다. 장점 구현이 간단하다 관계형베이스 (MySQL, PostgreSQL 등)에서 LIMIT, OFFSET 키워드를 기본 제공한다. SELECT * FROM posts ORDER BY created_at DESC LIMIT 10 //10개씩 가져와 OFFSET 20; //시작점은 20부터 //Oracle 12c 이상에서는 FETCH FIRST, OFFSEt 같은 구문을 지원한다. SELECT * FROM posts ORDER BY created_at DESC OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY; //Oracle 11g 이하에서는 서브쿼로 우회를 해야함; //21~30번째 행을 조회 SELECT * FROM ( SELECT a.*, ROWNUM rnum FROM ( SELECT * FROM posts ORDER BY created_at DESC ) a WHERE ROWNUM &lt;= 30 ) WHERE rnum &gt; 20; 조금 이따 얘기하겠지만 이전 페이지의 상태를 기억할 필요가 없이, limit와 page만 넘기면 된다. Spring JPA, Django ORM 과 같은 프레임워크에서 .findAll({offset, limit}) 같은 옵션을 주면 간단히 구현이 된다. 단점 데이터 변경 문제 오프셋의 문제는 몇개부터 몇개를 잘라오는 방식이기 때문에, 데이터가 중간에 추가가 되거나 삭제가 되면 중복 문제가 발생한다. 예를 들어 A가 1~10번 페이지를 먼저 조회 B가 1번 글을 삭제를 함 A가 다음 페이지인 11번~20번을 조회하였지만 1번 글이 삭제되어 10번부터 19번까지 조회 10번의 글이 중복으로 조회가 됨. 대용량의 경우, 성능 문제가 존재 사실 이 글을 쓰게된 핵심 이유가 여기 있다. OFFSET은 DB 내부적으로 앞의 데이터를 전부 스캔 (FULL SCAN) 후에 건너띄는 방식이라, OFFSET이 크다면 성능이 떨어질수 있다. 예를 들어 OFFSET 방식에 의해 1000001번째 ~ 1000010번째 데이터를 조회한다고 하면, 앞의 100만개의 데이터를 FULL 스캔을 해야하는 것이다. 2. 커서 기반 페이징 (Cursor Based Pagination) 위 단점을 보완할 수 있는게 커서 기반 페이징 방식이다. 커서 기반 페이징(Cursor Based Pagination)은 어디서 시작할지 명확히 하는 방식이다. 커서 기반은 정렬의 기준이 되는 값이 필요한데, 이를 커서 (Cursor)라고 한다. SELECT * FROM posts WHERE created_at &lt; &#39;2024-01-01 12:00:00&#39; //&#39;2024-01-01 12:00:00&#39; 가 커서이다. 해당 시점 이전 글 10개를 조회 ORDER BY created_at DESC LIMIT 10; 장점 데이터 중복 문제 해결 상황을 가정해보자. A 사용자가 최근 글 10개 1페이지를 본 이후 B 사용자가 글 하나를 삭제 &gt; A 사용자가 2 페이지 요청 -- 1페이지 SELECT * FROM posts ORDER BY id DESC LIMIT 10; -- 2페이지 (A는 마지막 글의 id = 1000 을 커서로 기억하고 있음) SELECT * FROM posts WHERE id &lt; 1000 //1000이 커서다 ORDER BY id DESC LIMIT 10; 어떤 값을 커서로 쓸건지도 고민해볼 대상이다. 날짜와 같은 값도 cursor가 될수 있지만, 고유성이 보장되고, 인덱싱이 되는 인자면 더욱 유리할 것. 또한 카디널리티가 낮은 (중복도가 높은) 인자가 검색에 유리할 것이다. 단 id 의 생성 순서가 보장되어야한다. UUID와 같은 랜덤한 값은 페이징하기 적절치 않다. 성능이 보다 좋다. 커서 기반은 무작정으로 앞에서 풀스캔을 하지 않는다. -- created_at에 인덱스가 있다면, 아래는 범위 조회로 빠르게 동작 SELECT * FROM posts WHERE created_at &lt; &#39;2024-12-31 23:59:59&#39; ORDER BY created_at DESC LIMIT 10; 100만건의 유저의 수를 가지고 있는 테이블 조회 성능 비교 offset (928ms) 보다 cursor (472ms)로 두배의 성능 차이를 보인다. 단점 이전 페이지로의 이동이 어렵다. 이전 페이지로 이동을 하려면 커서를 되짚을 방법이 필요하다. A가 3페이지를 갔다가 2페이지로 돌아가려한다. 2페이지의 마지막 글을 기억하고 정렬을 반대로하여, Limit 만큼 뽑아낸다. -- created_at이 &#39;2024-01-01&#39;인 경우 이전 페이지를 보려면 //2페이지의 마지막 글이 12/30 23:59:59 에 작성되었다 가정하면 SELECT * FROM posts WHERE created_at &gt; &#39;2024-12-30 23:59:59&#39; ORDER BY created_at ASC LIMIT 10; 오프셋처럼 특정 페이지 번호로 직접 이동 불가 9페이지 주세요 같은 특정 페이지로 이동은 불가하다. 3. 언제 cursor 기반이 좋을까? SNS 피드, 채팅 로그 등 무한 스크롤 같은 경우, 커서 페이징의 단점을 띄기 어려운 구조이며 실시간성으로 데이터가 자주 변하는 시스템의 경우 적절하다 4. 대용량 배치는 어떨까? 정산 같은 도메인을 개발하다 보면 하루에 수십 만건에서 수억건에 해당하는 데이터를 조회하는 경우가 있다. offset 이전의 데이터를 full scan 하는 offset 방식보다 cursor 방식 쿼리 성능 측면에서 유리하다. 또한 데이터의 중복이나 누락의 위험도가 없다. ```sql – 초기 커서 SELECT * FROM my_table WHERE id &gt; 0 ORDER BY id ASC LIMIT 10000; – 이후 반복 SELECT * FROM my_table WHERE id &gt; :last_processed_id ORDER BY id ASC LIMIT 10000; ``` 단, 반드시 PK의 정렬 기준이 순차적이고 고유해야한다. 그리고 병렬 처리시 범위를 쪼개서 병렬 커서 관리가 필요하다.","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
     
@@ -95,7 +97,7 @@
 
   </head>
 
-  <body class="layout-page  elements">
+  <body class="layout-post  커서-기반-페이징-cursor-based-pagination">
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="height: 0; position: absolute">
   <symbol id="codepen" viewBox="0 0 16 16"><path d="M15.988 5.443c-.004-.02-.007-.04-.012-.058l-.01-.033c-.006-.017-.012-.034-.02-.05-.003-.012-.01-.023-.014-.034l-.023-.045-.02-.032-.03-.04-.024-.03c-.01-.013-.022-.026-.034-.038l-.027-.027-.04-.032-.03-.024-.012-.01L8.38.117c-.23-.155-.53-.155-.76 0L.305 4.99.296 5c-.012.007-.022.015-.032.023-.014.01-.027.02-.04.032l-.027.027-.034.037-.024.03-.03.04c-.006.012-.013.022-.02.033l-.023.045-.015.034c-.007.016-.012.033-.018.05l-.01.032c-.005.02-.01.038-.012.058l-.006.03C.002 5.5 0 5.53 0 5.56v4.875c0 .03.002.06.006.09l.007.03c.003.02.006.04.013.058l.01.033c.006.018.01.035.018.05l.015.033c.006.016.014.03.023.047l.02.03c.008.016.018.03.03.042.007.01.014.02.023.03.01.012.02.025.034.036.01.01.018.02.028.026l.04.033.03.023.01.01 7.31 4.876c.116.078.248.117.382.116.134 0 .266-.04.38-.116l7.314-4.875.01-.01c.012-.007.022-.015.032-.023.014-.01.027-.02.04-.032l.027-.027.034-.037.024-.03.03-.04.02-.032.023-.046.015-.033.018-.052.01-.033c.005-.02.01-.038.013-.058 0-.01.003-.02.004-.03.004-.03.006-.06.006-.09V5.564c0-.03-.002-.06-.006-.09l-.007-.03zM8 9.626L5.568 8 8 6.374 10.432 8 8 9.626zM7.312 5.18l-2.98 1.993-2.406-1.61 5.386-3.59v3.206zM3.095 8l-1.72 1.15v-2.3L3.095 8zm1.237.828l2.98 1.993v3.208l-5.386-3.59 2.406-1.61zm4.355 1.993l2.98-1.993 2.407 1.61-5.387 3.59v-3.206zM12.905 8l1.72-1.15v2.3L12.905 8zm-1.237-.827L8.688 5.18V1.97l5.386 3.59-2.406 1.61z" fill-rule="nonzero"/></symbol>
   <symbol id="dribbble" viewBox="0 0 16 16"><path d="M8 16c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm6.747-6.905c-.234-.074-2.115-.635-4.257-.292.894 2.456 1.258 4.456 1.328 4.872 1.533-1.037 2.624-2.68 2.93-4.58zM10.67 14.3c-.102-.6-.5-2.688-1.46-5.18l-.044.014C5.312 10.477 3.93 13.15 3.806 13.4c1.158.905 2.614 1.444 4.194 1.444.947 0 1.85-.194 2.67-.543zm-7.747-1.72c.155-.266 2.03-3.37 5.555-4.51.09-.03.18-.056.27-.08-.173-.39-.36-.778-.555-1.16C4.78 7.85 1.47 7.807 1.17 7.8l-.003.208c0 1.755.665 3.358 1.756 4.57zM1.31 6.61c.307.005 3.122.017 6.318-.832-1.132-2.012-2.353-3.705-2.533-3.952-1.912.902-3.34 2.664-3.784 4.785zM6.4 1.368c.188.253 1.43 1.943 2.548 4 2.43-.91 3.46-2.293 3.582-2.468C11.323 1.827 9.736 1.176 8 1.176c-.55 0-1.087.066-1.6.19zm6.89 2.322c-.145.194-1.29 1.662-3.816 2.694.16.325.31.656.453.99.05.117.1.235.147.352 2.274-.286 4.533.172 4.758.22-.015-1.613-.59-3.094-1.543-4.257z"/></symbol>
@@ -193,9 +195,9 @@
 
 
 
-  <div class="feature" style="background-image: url(https://picsum.photos/2560/600?image=873)">
+  <div class="feature" style="background-image: url(https://picsum.photos/2560/600?image=872)">
     <div class="container  typeset">
-      <p>A demo of Markdown and HTML includes</p>
+      
 
     </div>
   </div>
@@ -207,249 +209,262 @@
 
 <main class="main  container">
 
-  <article class="article  article--page  content  typeset">
+  <article class="article  article--post  content  typeset">
 
-    <h1>Elements</h1>
+    <h1>커서 기반 페이징 (Cursor Based Pagination)</h1>
+    
 
-    <h1 id="heading-1">Heading 1</h1>
+<small class="small  post-meta">
+  
+  
+    
+      <span class="label  label--category"><a href="/categories/#implementation">implementation</a></span>
+    
+  &nbsp;&middot;&nbsp;<time datetime="2025-05-18T00:00:00+01:00" class="time">18 May 2025</time>
+</small>
 
-<h2 id="heading-2">Heading 2</h2>
+    <h2 id="1-페이지네이션-이란-">1. 페이지네이션 이란 ?</h2>
+<blockquote>
+  <p>대용량 데이터 처리 방식을 나누다가 나온 주제로 정리를 하기 위해 이 글을 작성합니다.</p>
+</blockquote>
 
-<h3 id="heading-3">Heading 3</h3>
+<p>페이지네이션 (Pagination)은 웹 페이지의 컨텐츠를 여러 페이지로 나누는 것을 얘기합니다. 웹 페이지일 수도 있고, 데이터일 수 있습니다.</p>
 
-<h4 id="heading-4">Heading 4</h4>
+<hr />
 
-<h5 id="heading-5">Heading 5</h5>
+<h3 id="조건">조건</h3>
+<p>페이지네이션을 하기 위한 조건은 아래와 같다.</p>
+<ol>
+  <li>한 페이지에 얼만큼 보여주어야 하는가 <br /><strong>limit</strong> 혹은 <strong>page size</strong></li>
+  <li>시작점 <br /><strong>offset</strong></li>
+</ol>
 
-<h6 id="heading-6">Heading 6</h6>
+<hr />
 
-<p><small>A small element</small></p>
+<h3 id="구현">구현</h3>
+<p>페이지 네이션에는 크게 2가지 구현 방식 존재합니다.</p>
+<ol>
+  <li>오프셋 기반 (offset based pagination)</li>
+  <li>커서드 기반 (cursor based pagination)</li>
+</ol>
 
-<p><a href="https://david.darn.es" title="A link">A link</a></p>
+<hr />
 
-<p>Lorem ipsum dolor sit amet, consectetur adip* isicing elit, sed do eiusmod *tempor incididunt ut labore et dolore magna aliqua.</p>
+<h2 id="1-오프셋-기반-페이징offset-based-pagination이란">1. 오프셋 기반 페이징(offset based pagination)이란?</h2>
+<p>가장 널리 쓰이는 구현 방식, 특정 위치 (시작점, offset)에서 정해진 개수(limit) 만큼 데이터를 조회하는 방식입니다.</p>
 
-<p>Duis aute irure dolor in <a href="https://david.darn.es" title="A link">A link</a> reprehenderit in voluptate velit esse cillum <strong>bold text</strong> dolore eu fugiat nulla pariatur. Excepteur span element sint occaecat cupidatat non proident, sunt <em>italicised text</em> in culpa qui officia deserunt mollit anim id <code class="language-plaintext highlighter-rouge">some code</code> est laborum.</p>
+<h3 id="장점">장점</h3>
+<h4 id="구현이-간단하다">구현이 간단하다</h4>
+<ol>
+  <li>관계형베이스 (MySQL, PostgreSQL 등)에서 LIMIT, OFFSET 키워드를 기본 제공한다.
+    <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span>
+ <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">created_at</span> <span class="k">DESC</span>
+ <span class="k">LIMIT</span> <span class="mi">10</span>  <span class="o">//</span><span class="mi">10</span><span class="err">개씩</span> <span class="err">가져와</span>
+ <span class="k">OFFSET</span> <span class="mi">20</span><span class="p">;</span> <span class="o">//</span><span class="err">시작점은</span> <span class="mi">20</span><span class="err">부터</span>
+</code></pre></div>    </div>
+    <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">//</span><span class="n">Oracle</span> <span class="mi">12</span><span class="k">c</span> <span class="err">이상에서는</span> <span class="k">FETCH</span> <span class="k">FIRST</span><span class="p">,</span> <span class="k">OFFSEt</span> <span class="err">같은</span> <span class="err">구문을</span> <span class="err">지원한다</span><span class="p">.</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">created_at</span> <span class="k">DESC</span>
+<span class="k">OFFSET</span> <span class="mi">20</span> <span class="k">ROWS</span> <span class="k">FETCH</span> <span class="k">NEXT</span> <span class="mi">10</span> <span class="k">ROWS</span> <span class="k">ONLY</span><span class="p">;</span>
 
+<span class="o">//</span><span class="n">Oracle</span> <span class="mi">11</span><span class="k">g</span> <span class="err">이하에서는</span> <span class="err">서브쿼로</span> <span class="err">우회를</span> <span class="err">해야함</span><span class="p">;</span>
+<span class="o">//</span><span class="mi">21</span><span class="o">~</span><span class="mi">30</span><span class="err">번째</span> <span class="err">행을</span> <span class="err">조회</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="p">(</span>
+   <span class="k">SELECT</span> <span class="n">a</span><span class="p">.</span><span class="o">*</span><span class="p">,</span> <span class="n">ROWNUM</span> <span class="n">rnum</span> <span class="k">FROM</span> <span class="p">(</span>
+     <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">created_at</span> <span class="k">DESC</span>
+   <span class="p">)</span> <span class="n">a</span> <span class="k">WHERE</span> <span class="n">ROWNUM</span> <span class="o">&lt;=</span> <span class="mi">30</span>
+<span class="p">)</span>
+<span class="k">WHERE</span> <span class="n">rnum</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">;</span>
+</code></pre></div>    </div>
+  </li>
+  <li>조금 이따 얘기하겠지만 이전 페이지의 상태를 기억할 필요가 없이, limit와 page만 넘기면 된다.</li>
+  <li>Spring JPA, Django ORM 과 같은 프레임워크에서 .findAll({offset, limit}) 같은 옵션을 주면 간단히 구현이 된다.</li>
+</ol>
+
+<h3 id="단점">단점</h3>
+<h4 id="데이터-변경-문제">데이터 변경 문제</h4>
+<p>오프셋의 문제는 몇개부터 몇개를 잘라오는 방식이기 때문에, 데이터가 중간에 추가가 되거나 삭제가 되면 <strong>중복 문제</strong>가 발생한다.</p>
+
+<p>예를 들어</p>
 <ul>
-  <li>An item</li>
-  <li>An item</li>
-  <li>An item</li>
-  <li>An item</li>
-  <li>An item</li>
+  <li>A가 1~10번 페이지를 먼저 조회</li>
+  <li>B가 1번 글을 삭제를 함</li>
+  <li>A가 다음 페이지인 11번~20번을 조회하였지만 1번 글이 삭제되어 10번부터 19번까지 조회</li>
+  <li><strong>10번의 글이 중복으로 조회가 됨.</strong></li>
+</ul>
+
+<h4 id="대용량의-경우-성능-문제가-존재">대용량의 경우, 성능 문제가 존재</h4>
+<blockquote>
+  <p>사실 이 글을 쓰게된 핵심 이유가 여기 있다. <br /></p>
+  <blockquote>
+    <p>OFFSET은 DB 내부적으로 앞의 데이터를 전부 스캔 (FULL SCAN) 후에 건너띄는 방식이라, OFFSET이 크다면 성능이 떨어질수 있다.<br />
+예를 들어 OFFSET 방식에 의해 1000001번째 ~ 1000010번째 데이터를 조회한다고 하면, 앞의 100만개의 데이터를 FULL 스캔을 해야하는 것이다.</p>
+  </blockquote>
+</blockquote>
+
+<h2 id="2-커서-기반-페이징-cursor-based-pagination">2. 커서 기반 페이징 (Cursor Based Pagination)</h2>
+<blockquote>
+  <p>위 단점을 보완할 수 있는게 커서 기반 페이징 방식이다.</p>
+</blockquote>
+
+<p>커서 기반 페이징(Cursor Based Pagination)은 <strong>어디서 시작할지</strong> 명확히 하는 방식이다.
+커서 기반은 정렬의 기준이 되는 값이 필요한데, 이를 <strong>커서 (Cursor)</strong>라고 한다.</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span>
+<span class="k">WHERE</span> <span class="n">created_at</span> <span class="o">&lt;</span> <span class="s1">'2024-01-01 12:00:00'</span> <span class="o">//</span><span class="s1">'2024-01-01 12:00:00'</span> <span class="err">가</span> <span class="err">커서이다</span><span class="p">.</span> <span class="err">해당</span> <span class="err">시점</span> <span class="err">이전</span> <span class="err">글</span> <span class="mi">10</span><span class="err">개를</span> <span class="err">조회</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">created_at</span> <span class="k">DESC</span>
+<span class="k">LIMIT</span> <span class="mi">10</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h3 id="장점-1">장점</h3>
+<h4 id="데이터-중복-문제-해결">데이터 중복 문제 해결</h4>
+<blockquote>
+  <p>상황을 가정해보자. A 사용자가 최근 글 10개 1페이지를 본 이후 B 사용자가 글 하나를 삭제 &gt; A 사용자가 2 페이지 요청</p>
+</blockquote>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- 1페이지</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">id</span> <span class="k">DESC</span>
+   <span class="k">LIMIT</span> <span class="mi">10</span><span class="p">;</span>
+
+<span class="c1">-- 2페이지 (A는 마지막 글의 id = 1000 을 커서로 기억하고 있음)</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span>
+<span class="k">WHERE</span> <span class="n">id</span> <span class="o">&lt;</span> <span class="mi">1000</span> <span class="o">//</span><span class="mi">1000</span><span class="err">이</span> <span class="err">커서다</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">id</span> <span class="k">DESC</span>
+   <span class="k">LIMIT</span> <span class="mi">10</span><span class="p">;</span>
+</code></pre></div></div>
+<ul>
+  <li>어떤 값을 커서로 쓸건지도 고민해볼 대상이다. 날짜와 같은 값도 cursor가 될수 있지만, 고유성이 보장되고, 인덱싱이 되는 인자면 더욱 유리할 것. 또한 카디널리티가 낮은 (중복도가 높은) 인자가 검색에 유리할 것이다.</li>
+  <li>단 id 의 생성 순서가 보장되어야한다. UUID와 같은 랜덤한 값은 페이징하기 적절치 않다.</li>
+</ul>
+
+<h4 id="성능이-보다-좋다">성능이 보다 좋다.</h4>
+<blockquote>
+  <p>커서 기반은 무작정으로 앞에서 풀스캔을 하지 않는다.</p>
+  <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- created_at에 인덱스가 있다면, 아래는 범위 조회로 빠르게 동작</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span>
+<span class="k">WHERE</span> <span class="n">created_at</span> <span class="o">&lt;</span> <span class="s1">'2024-12-31 23:59:59'</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">created_at</span> <span class="k">DESC</span>
+<span class="k">LIMIT</span> <span class="mi">10</span><span class="p">;</span>
+</code></pre></div>  </div>
+</blockquote>
+
+<h2 id="100만건의-유저의-수를-가지고-있는-테이블-조회-성능-비교">100만건의 유저의 수를 가지고 있는 테이블 조회 성능 비교</h2>
+<p><img src="/assets/images/screentshot-20250528202554.png" alt="test" />
+<img src="/assets/images/screentshot-20250528202555.png" alt="test" /></p>
+
+<h2 id="offset-928ms-보다-cursor-472ms로-두배의-성능-차이를-보인다">offset (928ms) 보다 cursor (472ms)로 두배의 성능 차이를 보인다.</h2>
+<p><img src="/assets/images/screentshot-20250528202556.png" alt="test" />
+  <img src="/assets/images/screentshot-20250528202557.png" alt="test" />
+  <img src="/assets/images/screentshot-20250528202558.png" alt="test" /></p>
+
+<h3 id="단점-1">단점</h3>
+<h4 id="이전-페이지로의-이동이-어렵다">이전 페이지로의 이동이 어렵다.</h4>
+<ul>
+  <li>이전 페이지로 이동을 하려면 커서를 되짚을 방법이 필요하다.
+    <blockquote>
+      <p>A가 3페이지를 갔다가 2페이지로 돌아가려한다.<br /></p>
+    </blockquote>
+  </li>
 </ul>
 
 <ol>
-  <li>Item one</li>
-  <li>Item two</li>
-  <li>Item three</li>
-  <li>Item four</li>
-  <li>Item five</li>
+  <li>2페이지의 마지막 글을 기억하고</li>
+  <li>정렬을 반대로하여, Limit 만큼 뽑아낸다.
+    <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- created_at이 '2024-01-01'인 경우 이전 페이지를 보려면</span>
+<span class="o">//</span><span class="mi">2</span><span class="err">페이지의</span> <span class="err">마지막</span> <span class="err">글이</span> <span class="mi">12</span><span class="o">/</span><span class="mi">30</span> <span class="mi">23</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">59</span> <span class="err">에</span> <span class="err">작성되었다</span> <span class="err">가정하면</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">posts</span>
+<span class="k">WHERE</span> <span class="n">created_at</span> <span class="o">&gt;</span> <span class="s1">'2024-12-30 23:59:59'</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">created_at</span> <span class="k">ASC</span>
+<span class="k">LIMIT</span> <span class="mi">10</span><span class="p">;</span>
+</code></pre></div>    </div>
+  </li>
 </ol>
 
+<h4 id="오프셋처럼-특정-페이지-번호로-직접-이동-불가">오프셋처럼 특정 페이지 번호로 직접 이동 불가</h4>
 <blockquote>
-  <p>A simple blockquote</p>
+  <p>9페이지 주세요 같은 특정 페이지로 이동은 불가하다.</p>
 </blockquote>
 
-<p>Some HTML…</p>
+<h2 id="3-언제-cursor-기반이-좋을까">3. 언제 cursor 기반이 좋을까?</h2>
+<blockquote>
+  <p>SNS 피드, 채팅 로그 등 무한 스크롤 같은 경우, 커서 페이징의 단점을 띄기 어려운 구조이며 <br />
+실시간성으로 데이터가 자주 변하는 시스템의 경우 적절하다</p>
+</blockquote>
 
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;blockquote</span> <span class="na">cite=</span><span class="s">"http://www.imdb.com/title/tt0284978/quotes/qt1375101"</span><span class="nt">&gt;</span>
-  <span class="nt">&lt;p&gt;</span>You planning a vacation, Mr. Sullivan?<span class="nt">&lt;/p&gt;</span>
-  <span class="nt">&lt;footer&gt;</span>
-    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"http://www.imdb.com/title/tt0284978/quotes/qt1375101"</span><span class="nt">&gt;</span>Sunways Security Guard<span class="nt">&lt;/a&gt;</span>
-  <span class="nt">&lt;/footer&gt;</span>
-<span class="nt">&lt;/blockquote&gt;</span>
-</code></pre></div></div>
+<h2 id="4-대용량-배치는-어떨까">4. 대용량 배치는 어떨까?</h2>
+<ul>
+  <li>정산 같은 도메인을 개발하다 보면 하루에 수십 만건에서 수억건에 해당하는 데이터를 조회하는 경우가 있다.</li>
+  <li>offset 이전의 데이터를 full scan 하는 offset 방식보다 cursor 방식 쿼리 성능 측면에서 유리하다.</li>
+  <li>또한 데이터의 중복이나 누락의 위험도가 없다.
+```sql
+– 초기 커서
+SELECT * FROM my_table
+WHERE id &gt; 0
+ORDER BY id ASC
+LIMIT 10000;</li>
+</ul>
 
-<p>…CSS…</p>
+<p>– 이후 반복
+SELECT * FROM my_table
+WHERE id &gt; :last_processed_id
+ORDER BY id ASC
+LIMIT 10000;
+```</p>
 
-<div class="language-css highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">blockquote</span> <span class="p">{</span>
-  <span class="nl">text-align</span><span class="p">:</span> <span class="nb">center</span><span class="p">;</span>
-  <span class="nl">font-weight</span><span class="p">:</span> <span class="nb">bold</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="nt">blockquote</span> <span class="nt">footer</span> <span class="p">{</span>
-  <span class="nl">font-size</span><span class="p">:</span> <span class="m">.8rem</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div></div>
+<h3 id="단-반드시-pk의-정렬-기준이-순차적이고-고유해야한다-그리고-병렬-처리시-범위를-쪼개서-병렬-커서-관리가-필요하다"><strong>단, 반드시 PK의 정렬 기준이 순차적이고 고유해야한다. 그리고 병렬 처리시 범위를 쪼개서 병렬 커서 관리가 필요하다.</strong></h3>
 
-<p>…and JavaScript</p>
 
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">blockquote</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nf">querySelector</span><span class="p">(</span><span class="dl">"</span><span class="s2">blockquote</span><span class="dl">"</span><span class="p">)</span>
-<span class="kd">const</span> <span class="nx">bolden</span> <span class="o">=</span> <span class="p">(</span><span class="nx">keyString</span><span class="p">,</span> <span class="nx">string</span><span class="p">)</span> <span class="o">=&gt;</span>
-  <span class="nx">string</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="k">new</span> <span class="nc">RegExp</span><span class="p">(</span><span class="nx">keyString</span><span class="p">,</span> <span class="dl">'</span><span class="s1">g</span><span class="dl">'</span><span class="p">),</span> <span class="dl">'</span><span class="s1">&lt;strong&gt;</span><span class="dl">'</span><span class="o">+</span><span class="nx">keyString</span><span class="o">+</span><span class="dl">'</span><span class="s1">&lt;/strong&gt;</span><span class="dl">'</span><span class="p">)</span>
+    <div class="share">
+  
+    
+      
+      
+      
+      
 
-<span class="nx">blockquote</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="nf">bolden</span><span class="p">(</span><span class="dl">"</span><span class="s2">Mr. Sullivan</span><span class="dl">"</span><span class="p">,</span> <span class="nx">blockquote</span><span class="p">.</span><span class="nx">innerHTML</span><span class="p">)</span>
-</code></pre></div></div>
+      
 
-<p><code class="language-plaintext highlighter-rouge">Single line of code</code></p>
-
-<h2 id="html-includes">HTML Includes</h2>
-
-<h3 id="contact-form">Contact form</h3>
-
-<form class="form  form--contact" method="post" name="Contact" action="/thanks/">
-  <fieldset class="fieldset  form__fieldset">
-    <legend class="legend form__legend">Contact</legend>
-    <label class="label" for="name--contact">Name: <span class="required">*</span></label>
-    <input class="input" id="name--contact" type="text" name="name" value="" placeholder="Your Name" required="required" />
-
-    <label class="label" for="email--contact">Email Address: <span class="required">*</span></label>
-    <input class="input" id="email--contact" type="email" name="email" value="" placeholder="email@website.com" required="required" />
-
-    <label class="label" for="message--contact">Message: <span class="required">*</span></label>
-    <textarea class="textarea" id="message--contact" name="message" placeholder="Your message..." required="required"></textarea>
-
-    <input class="button" type="submit" value="Send message" />
-    <br />
-    <small class="small"><span class="required">*</span> indicates a required field</small>
+      <a class="button" href="https://twitter.com/intent/tweet/?url=http://localhost:4000/implementation/2025/05/18/CursorBasedPaging/&text=%EC%BB%A4%EC%84%9C%20%EA%B8%B0%EB%B0%98%20%ED%8E%98%EC%9D%B4%EC%A7%95%20(Cursor%20Based%20Pagination)&via=DavidDarnes" style="background: #0d94e7">Twitter&nbsp; <svg width="16" height="16" class="icon  icon--twitter" role="img" alt="twitter"><title>twitter</title><use xlink:href="#twitter" fill="CurrentColor"></use></svg>
+</a>
 
     
-      <input type="text" name="_gotcha" style="display:none" />
-      <input type="hidden" name="_subject" value="블로그 submission from Contact" />
-      <input type="hidden" name="_next" value="/thanks/" />
+  
     
-  </fieldset>
-</form>
+      
+      
+      
+      
 
-<script>
-    var email = "moc.liamg@ooy.ottepez";
-    var unraveledEmail = email.split("").reverse().join("");
-    var form = document.querySelector(".form--contact");
-      form.setAttribute("action", "https://formspree.io/" + unraveledEmail);
-  </script>
+      
 
-<noscript>Please enable JavaScript to use the form.</noscript>
+      <a class="button" href="https://facebook.com/sharer/sharer.php?u=http://localhost:4000/implementation/2025/05/18/CursorBasedPaging/" style="background: #3B5998">facebook&nbsp; <svg width="16" height="16" class="icon  icon--facebook" role="img" alt="facebook"><title>facebook</title><use xlink:href="#facebook" fill="CurrentColor"></use></svg>
+</a>
 
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{% include site-form.html %}
-</code></pre></div></div>
+    
+  
+    
+      
+      
+      
+      
 
-<h3 id="demo-map-embed">Demo map embed</h3>
+      
 
-<div class="map"><iframe src="https://www.google.com/maps/d/u/0/embed?mid=1UT-2Z-Vg_MG_TrS5X2p8SthsJhc" title="Coffee shop map"></iframe></div>
+      <a class="button" href="mailto:?subject=커서 기반 페이징 (Cursor Based Pagination)&body=Hey, check out this: http://localhost:4000/implementation/2025/05/18/CursorBasedPaging/" style="background: true">Email&nbsp; <svg width="16" height="16" class="icon  icon--email" role="img" alt="email"><title>email</title><use xlink:href="#email" fill="CurrentColor"></use></svg>
+</a>
 
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{% include map.html id="XXXXXX" title="Coffee shop map" %}
-</code></pre></div></div>
-
-<h3 id="button-include">Button include</h3>
-
-<p><a class="button" href="https://david.darn.es">A button</a></p>
-
-<p><a class="button" href="https://twitter.com/daviddarnes">A button with icon  <svg width="16" height="16" class="icon  icon--twitter" role="img" alt="twitter"><title>twitter</title><use xlink:href="#twitter" fill="CurrentColor"></use></svg>
-</a></p>
-
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{% include button.html text="A button" link="https://david.darn.es" %}
-{% include button.html text="A button with icon" link="https://twitter.com/daviddarnes" icon="twitter" %}
-</code></pre></div></div>
-
-<h3 id="icon-include">Icon include</h3>
-
-<svg width="16" height="16" class="icon  icon--twitter" role="img" alt="twitter"><title>twitter</title><use xlink:href="#twitter" fill="CurrentColor"></use></svg>
-<p><a href="https://www.linkedin.com/in/daviddarnes"><svg width="16" height="16" class="icon  icon--linkedin" role="img" alt="twitter"><title>twitter</title><use xlink:href="#linkedin" fill="CurrentColor"></use></svg>
-</a></p>
-
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{% include icon.html id="twitter" title="twitter" %}
-[{% include icon.html id="linkedin" title="twitter" %}](https://www.linkedin.com/in/daviddarnes)
-</code></pre></div></div>
-
-<h3 id="video-include">Video include</h3>
-
-<div class="video">
-  <iframe src="https://www.youtube.com/embed/zrkcGL5H3MU" frameborder="0" allowfullscreen="" title="Siteleaf tutorial video"></iframe>
+    
+  
 </div>
 
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{% include video.html id="zrkcGL5H3MU" title="Siteleaf tutorial video" %}
-</code></pre></div></div>
 
-<h3 id="image-includes">Image includes</h3>
-
-<figure class="figure  figure--center">
-  <img class="image" src="https://picsum.photos/600/800?image=894" alt="Image with caption" width="300" height="800" />
-  <figcaption class="caption">Image with caption</figcaption>
-</figure>
-
-<figure class="figure  figure--right">
-  <img class="image" src="https://picsum.photos/600/800?image=894" alt="Right aligned image" width="300" height="800" />
-  <figcaption class="caption">Right aligned image</figcaption>
-</figure>
-
-<figure class="figure  figure--left">
-  <img class="image" src="https://picsum.photos/600/800?image=894" alt="Left aligned image" width="300" height="800" />
-  <figcaption class="caption">Left aligned image</figcaption>
-</figure>
-
-<figure class="figure  figure--center">
-  <img class="image" src="https://picsum.photos/1600/800?image=894" alt="Image with just alt text" width="" height="" />
-  
-</figure>
-
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{% include figure.html image="https://picsum.photos/600/800?image=894" caption="Image with caption" width="300" height="800" %}
-
-{% include figure.html image="https://picsum.photos/600/800?image=894" caption="Right aligned image" position="right" width="300" height="800" %}
-
-{% include figure.html image="https://picsum.photos/600/800?image=894" caption="Left aligned image" position="left" width="300" height="800" %}
-
-{% include figure.html image="https://picsum.photos/1600/800?image=894" alt="Image with just alt text" %}
-</code></pre></div></div>
+    
 
 
   </article>
 
-  <aside class="aside  typeset  aside--right">
-
   
-    <section class="section  section--description">
-      <h3>About this site</h3>
-      <p>Alembic is a starting point for Jekyll projects. Rather than starting from scratch, this boilerplate is designed to get the ball rolling immediately</p>
-      <nav class="nav  nav--social">
-  
-    
-      
-      <a href="https://twitter.com/DavidDarnes">
-        <svg width="16" height="16" class="icon  icon--twitter" role="img" alt="twitter"><title>twitter</title><use xlink:href="#twitter" fill="CurrentColor"></use></svg>
-
-      </a>
-    
-  
-    
-      
-      <a href="https://www.linkedin.com/in/daviddarnes">
-        <svg width="16" height="16" class="icon  icon--linkedin" role="img" alt="linkedin"><title>linkedin</title><use xlink:href="#linkedin" fill="CurrentColor"></use></svg>
-
-      </a>
-    
-  
-    
-      
-      <a href="https://github.com/zepetto7065">
-        <svg width="16" height="16" class="icon  icon--github" role="img" alt="github"><title>github</title><use xlink:href="#github" fill="CurrentColor"></use></svg>
-
-      </a>
-    
-  
-    
-      
-      <a href="https://darn.es">
-        <svg width="16" height="16" class="icon  icon--link" role="img" alt="link"><title>link</title><use xlink:href="#link" fill="CurrentColor"></use></svg>
-
-      </a>
-    
-  
-    
-      
-      <a href="/feed.xml">
-        <svg width="16" height="16" class="icon  icon--rss" role="img" alt="rss"><title>rss</title><use xlink:href="#rss" fill="CurrentColor"></use></svg>
-
-      </a>
-    
-  
-</nav>
-
-    </section>
-
-  
-
-</aside>
-
 
 </main>
 

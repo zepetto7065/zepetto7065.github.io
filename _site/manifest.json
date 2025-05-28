@@ -1,7 +1,7 @@
 {
   "lang": "en-GB",
-  "name": "개발자 블로그",
-  "short_name": "개발자블로그",
+  "name": "블로그",
+  "short_name": "블로그",
   "theme_color": "#24292e",
   "background_color": "#ffffff",
   "icons": [
