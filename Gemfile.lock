@@ -199,6 +199,7 @@ PLATFORMS
 
 DEPENDENCIES
   alembic-jekyll-theme!
+  jekyll-sitemap
 
 BUNDLED WITH
    2.6.8
