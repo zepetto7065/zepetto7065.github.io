@@ -1,8 +1,8 @@
-const version = '20250601132112';
+const version = '20250601132154';
 const cacheName = `static::${version}`;
 
 const buildContentBlob = () => {
-  return ["/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/","/implementation/2025/05/18/CursorBasedPaging/","/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/","/categories/","/elements/","/blog/","/","/manifest.json","/offline/","/assets/search.json","/search/","/assets/styles.css","/thanks/","/redirects.json","/sitemap.xml","/feed.xml","/assets/styles.css.map","/assets/logos/logo.svg", "/assets/default-offline-image.png", "/assets/scripts/fetch.js"
+  return ["/%EB%8F%99%EC%8B%9C%EC%84%B1/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/","/implementation/2025/05/18/CursorBasedPaging/","/java/2025/04/23/JVM-%EA%B5%AC%EC%A1%B01/","/categories/","/elements/","/blog/","/","/manifest.json","/offline/","/assets/search.json","/search/","/assets/styles.css","/thanks/","/redirects.json","/sitemap.xml","/feed.xml","/assets/styles.css.map","/assets/logos/logo.svg", "/assets/default-offline-image.png", "/assets/scripts/fetch.js"
   ]
 }
 
