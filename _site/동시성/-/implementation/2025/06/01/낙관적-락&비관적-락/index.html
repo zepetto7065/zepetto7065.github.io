@@ -10,26 +10,26 @@
 
     
       <!-- Begin Jekyll SEO tag v2.7.1 -->
-<title>커서 기반 페이징 (Cursor Based Pagination) | 정리공간</title>
+<title>낙관적 락 &amp; 비관적락 | 정리공간</title>
 <meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="커서 기반 페이징 (Cursor Based Pagination)" />
+<meta property="og:title" content="낙관적 락 &amp; 비관적락" />
 <meta name="author" content="DavidDarnes" />
 <meta property="og:locale" content="en_GB" />
-<meta name="description" content="title: 낙관적 락 &amp; 비관적락 categories: 동시성 implementation feature_image: “https://picsum.photos/2560/600?image=872” — 동시성 “동시성 이슈 (concurrency issue)”는 여러 작업이 동시에 같은 자원에 접근하여 변경할 때 발생하는 문제를 말한다. 데이터베이스에 동시에 접근하여 수정을 하려한다면? 위와 같은 문제를 해결하기 위해 데이터베이스의 락(Lock)을 사용하여 충돌을 방지한다. 테이블에 접근시 락이 걸려있으면 수정이 불가하고 락이 풀려 있을 때만 수정이 가능하다. 테이블을 수정한다면 내가 이 값을 수정한다고 선점 Lock? 멀티스레드 환경(또는 여러 트랜잭션 환경)에서 공유 자원을 동시에 수정하려할떄의 데이터 충돌 -&gt; 이를 막기 위한 전략이 락 (Lock)이다. 낙관적 락 (Optimistic Lock) vs 비관적 락 (Pessimistic Lock) 낙관적 락 “왠만하면 다른 사람이 데이터를 안 거드릴 거야”라는 락을 걸지 않다가, 최종 커밋 전에 충돌을 감지한다. 충돌하면 재시도 또는 실패 처리 장점 락을 걸지 않으므로 성능이 우수하다. 충돌이 적은 상황에서 매우 효율적이다. 단점 충돌 발생시 비용이 발생한다. 충돌이 많으면 성능 저하가 발생한다. 대표적 예 UPDATE coupon SET quantity = quantity - 1, version = version + 1 WHERE id = 1 AND version = 3; 버전이 일치하지 않으면 실패한다!! @Version private Integer version; JPA로 구현한 낙관적 락 비관적 락 “다른 누군가가 데이터를 수정될 것”이다라는 가정으로 미리 락을 걸어, 공유자원(스레드/트랜잭션)에 접근하지 못하게 하는 것 장점 충돌을 사전에 방지한다. 데이터 정합성 확보에 굉장히 명확한 방식 단점 락으로 인해 대기 시간이 생긴다. (누군가가 작업이 끝날때까지 대기를 해야하므로!) 데드락 위험이 있음 ( 두개 이상의 트랜잭션이 서로가 가진 락을 기다리면서 무한정 대기하는 상태 ) 락이 많아 질수록 성능이 저하된다. 대표적 예 SELECT * FROM coupon WHERE id = 1 FOR UPDATE; 다른 트랜잭션이 데이터를 건드리지 못하도록 즉시 락을 건다. Syncronized 비관적 락의 대표적인 예 자바에서 가장 기본적인 락 메커니즘 하나의 스레드만 특정 블록/메서드에 접근 가능하도록 한다. 공유 자원 접근 전 선제적으로 락을 건다. 다른 스레드는 락이 풀릴 때 까지 대기한다. public synchronized void increment() { count++; } public void increment() { synchronized (this) { count++; } } 문제점 syncronized는 단일 JVM 에서만 유효하다. 같은 메모리 공간에서만 유효하다는 말인 즉슨, MSA 구조와 같은 서버가 여러대인 공간에서 문제가 발생할 수 있다. MSA 환경에서 여러 서버가 같은 쿠폰 번호를 발급하거나, 같은 재고를 차감하는 로직을 수행한다면? 서버 A,B,C는 자기 서버의 JVM 기준의 락을 걸기 떄문에 각각의 서버가 동시에 같은 쿠폰을 발급할 수 있다." />
-<meta property="og:description" content="title: 낙관적 락 &amp; 비관적락 categories: 동시성 implementation feature_image: “https://picsum.photos/2560/600?image=872” — 동시성 “동시성 이슈 (concurrency issue)”는 여러 작업이 동시에 같은 자원에 접근하여 변경할 때 발생하는 문제를 말한다. 데이터베이스에 동시에 접근하여 수정을 하려한다면? 위와 같은 문제를 해결하기 위해 데이터베이스의 락(Lock)을 사용하여 충돌을 방지한다. 테이블에 접근시 락이 걸려있으면 수정이 불가하고 락이 풀려 있을 때만 수정이 가능하다. 테이블을 수정한다면 내가 이 값을 수정한다고 선점 Lock? 멀티스레드 환경(또는 여러 트랜잭션 환경)에서 공유 자원을 동시에 수정하려할떄의 데이터 충돌 -&gt; 이를 막기 위한 전략이 락 (Lock)이다. 낙관적 락 (Optimistic Lock) vs 비관적 락 (Pessimistic Lock) 낙관적 락 “왠만하면 다른 사람이 데이터를 안 거드릴 거야”라는 락을 걸지 않다가, 최종 커밋 전에 충돌을 감지한다. 충돌하면 재시도 또는 실패 처리 장점 락을 걸지 않으므로 성능이 우수하다. 충돌이 적은 상황에서 매우 효율적이다. 단점 충돌 발생시 비용이 발생한다. 충돌이 많으면 성능 저하가 발생한다. 대표적 예 UPDATE coupon SET quantity = quantity - 1, version = version + 1 WHERE id = 1 AND version = 3; 버전이 일치하지 않으면 실패한다!! @Version private Integer version; JPA로 구현한 낙관적 락 비관적 락 “다른 누군가가 데이터를 수정될 것”이다라는 가정으로 미리 락을 걸어, 공유자원(스레드/트랜잭션)에 접근하지 못하게 하는 것 장점 충돌을 사전에 방지한다. 데이터 정합성 확보에 굉장히 명확한 방식 단점 락으로 인해 대기 시간이 생긴다. (누군가가 작업이 끝날때까지 대기를 해야하므로!) 데드락 위험이 있음 ( 두개 이상의 트랜잭션이 서로가 가진 락을 기다리면서 무한정 대기하는 상태 ) 락이 많아 질수록 성능이 저하된다. 대표적 예 SELECT * FROM coupon WHERE id = 1 FOR UPDATE; 다른 트랜잭션이 데이터를 건드리지 못하도록 즉시 락을 건다. Syncronized 비관적 락의 대표적인 예 자바에서 가장 기본적인 락 메커니즘 하나의 스레드만 특정 블록/메서드에 접근 가능하도록 한다. 공유 자원 접근 전 선제적으로 락을 건다. 다른 스레드는 락이 풀릴 때 까지 대기한다. public synchronized void increment() { count++; } public void increment() { synchronized (this) { count++; } } 문제점 syncronized는 단일 JVM 에서만 유효하다. 같은 메모리 공간에서만 유효하다는 말인 즉슨, MSA 구조와 같은 서버가 여러대인 공간에서 문제가 발생할 수 있다. MSA 환경에서 여러 서버가 같은 쿠폰 번호를 발급하거나, 같은 재고를 차감하는 로직을 수행한다면? 서버 A,B,C는 자기 서버의 JVM 기준의 락을 걸기 떄문에 각각의 서버가 동시에 같은 쿠폰을 발급할 수 있다." />
-<link rel="canonical" href="http://localhost:4000/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/" />
-<meta property="og:url" content="http://localhost:4000/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/" />
+<meta name="description" content="동시성 “동시성 이슈 (concurrency issue)”는 여러 작업이 동시에 같은 자원에 접근하여 변경할 때 발생하는 문제를 말한다. 데이터베이스에 동시에 접근하여 수정을 하려한다면? 위와 같은 문제를 해결하기 위해 데이터베이스의 락(Lock)을 사용하여 충돌을 방지한다. 테이블에 접근시 락이 걸려있으면 수정이 불가하고 락이 풀려 있을 때만 수정이 가능하다. 테이블을 수정한다면 내가 이 값을 수정한다고 선점 Lock? 멀티스레드 환경(또는 여러 트랜잭션 환경)에서 공유 자원을 동시에 수정하려할떄의 데이터 충돌 -&gt; 이를 막기 위한 전략이 락 (Lock)이다. 낙관적 락 (Optimistic Lock) vs 비관적 락 (Pessimistic Lock) 낙관적 락 “왠만하면 다른 사람이 데이터를 안 거드릴 거야”라는 락을 걸지 않다가, 최종 커밋 전에 충돌을 감지한다. 충돌하면 재시도 또는 실패 처리 장점 락을 걸지 않으므로 성능이 우수하다. 충돌이 적은 상황에서 매우 효율적이다. 단점 충돌 발생시 비용이 발생한다. 충돌이 많으면 성능 저하가 발생한다. 대표적 예 UPDATE coupon SET quantity = quantity - 1, version = version + 1 WHERE id = 1 AND version = 3; 버전이 일치하지 않으면 실패한다!! @Version private Integer version; JPA로 구현한 낙관적 락 비관적 락 “다른 누군가가 데이터를 수정될 것”이다라는 가정으로 미리 락을 걸어, 공유자원(스레드/트랜잭션)에 접근하지 못하게 하는 것 장점 충돌을 사전에 방지한다. 데이터 정합성 확보에 굉장히 명확한 방식 단점 락으로 인해 대기 시간이 생긴다. (누군가가 작업이 끝날때까지 대기를 해야하므로!) 데드락 위험이 있음 ( 두개 이상의 트랜잭션이 서로가 가진 락을 기다리면서 무한정 대기하는 상태 ) 락이 많아 질수록 성능이 저하된다. 대표적 예 SELECT * FROM coupon WHERE id = 1 FOR UPDATE; 다른 트랜잭션이 데이터를 건드리지 못하도록 즉시 락을 건다. Syncronized 비관적 락의 대표적인 예 자바에서 가장 기본적인 락 메커니즘 하나의 스레드만 특정 블록/메서드에 접근 가능하도록 한다. 공유 자원 접근 전 선제적으로 락을 건다. 다른 스레드는 락이 풀릴 때 까지 대기한다. public synchronized void increment() { count++; } public void increment() { synchronized (this) { count++; } } 문제점 syncronized는 단일 JVM 에서만 유효하다. 같은 메모리 공간에서만 유효하다는 말인 즉슨, MSA 구조와 같은 서버가 여러대인 공간에서 문제가 발생할 수 있다. MSA 환경에서 여러 서버가 같은 쿠폰 번호를 발급하거나, 같은 재고를 차감하는 로직을 수행한다면? 서버 A,B,C는 자기 서버의 JVM 기준의 락을 걸기 떄문에 각각의 서버가 동시에 같은 쿠폰을 발급할 수 있다." />
+<meta property="og:description" content="동시성 “동시성 이슈 (concurrency issue)”는 여러 작업이 동시에 같은 자원에 접근하여 변경할 때 발생하는 문제를 말한다. 데이터베이스에 동시에 접근하여 수정을 하려한다면? 위와 같은 문제를 해결하기 위해 데이터베이스의 락(Lock)을 사용하여 충돌을 방지한다. 테이블에 접근시 락이 걸려있으면 수정이 불가하고 락이 풀려 있을 때만 수정이 가능하다. 테이블을 수정한다면 내가 이 값을 수정한다고 선점 Lock? 멀티스레드 환경(또는 여러 트랜잭션 환경)에서 공유 자원을 동시에 수정하려할떄의 데이터 충돌 -&gt; 이를 막기 위한 전략이 락 (Lock)이다. 낙관적 락 (Optimistic Lock) vs 비관적 락 (Pessimistic Lock) 낙관적 락 “왠만하면 다른 사람이 데이터를 안 거드릴 거야”라는 락을 걸지 않다가, 최종 커밋 전에 충돌을 감지한다. 충돌하면 재시도 또는 실패 처리 장점 락을 걸지 않으므로 성능이 우수하다. 충돌이 적은 상황에서 매우 효율적이다. 단점 충돌 발생시 비용이 발생한다. 충돌이 많으면 성능 저하가 발생한다. 대표적 예 UPDATE coupon SET quantity = quantity - 1, version = version + 1 WHERE id = 1 AND version = 3; 버전이 일치하지 않으면 실패한다!! @Version private Integer version; JPA로 구현한 낙관적 락 비관적 락 “다른 누군가가 데이터를 수정될 것”이다라는 가정으로 미리 락을 걸어, 공유자원(스레드/트랜잭션)에 접근하지 못하게 하는 것 장점 충돌을 사전에 방지한다. 데이터 정합성 확보에 굉장히 명확한 방식 단점 락으로 인해 대기 시간이 생긴다. (누군가가 작업이 끝날때까지 대기를 해야하므로!) 데드락 위험이 있음 ( 두개 이상의 트랜잭션이 서로가 가진 락을 기다리면서 무한정 대기하는 상태 ) 락이 많아 질수록 성능이 저하된다. 대표적 예 SELECT * FROM coupon WHERE id = 1 FOR UPDATE; 다른 트랜잭션이 데이터를 건드리지 못하도록 즉시 락을 건다. Syncronized 비관적 락의 대표적인 예 자바에서 가장 기본적인 락 메커니즘 하나의 스레드만 특정 블록/메서드에 접근 가능하도록 한다. 공유 자원 접근 전 선제적으로 락을 건다. 다른 스레드는 락이 풀릴 때 까지 대기한다. public synchronized void increment() { count++; } public void increment() { synchronized (this) { count++; } } 문제점 syncronized는 단일 JVM 에서만 유효하다. 같은 메모리 공간에서만 유효하다는 말인 즉슨, MSA 구조와 같은 서버가 여러대인 공간에서 문제가 발생할 수 있다. MSA 환경에서 여러 서버가 같은 쿠폰 번호를 발급하거나, 같은 재고를 차감하는 로직을 수행한다면? 서버 A,B,C는 자기 서버의 JVM 기준의 락을 걸기 떄문에 각각의 서버가 동시에 같은 쿠폰을 발급할 수 있다." />
+<link rel="canonical" href="http://localhost:4000/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/" />
+<meta property="og:url" content="http://localhost:4000/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/" />
 <meta property="og:site_name" content="정리공간" />
 <meta property="og:image" content="http://localhost:4000/assets/default-social-image.png" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2025-06-01T00:00:00+01:00" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta property="twitter:image" content="http://localhost:4000/assets/default-social-image.png" />
-<meta property="twitter:title" content="커서 기반 페이징 (Cursor Based Pagination)" />
+<meta property="twitter:title" content="낙관적 락 &amp; 비관적락" />
 <meta name="twitter:site" content="@DavidDarnes" />
 <meta name="twitter:creator" content="@DavidDarnes" />
 <script type="application/ld+json">
-{"image":"http://localhost:4000/assets/default-social-image.png","url":"http://localhost:4000/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/","headline":"커서 기반 페이징 (Cursor Based Pagination)","dateModified":"2025-06-01T00:00:00+01:00","datePublished":"2025-06-01T00:00:00+01:00","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/assets/logos/logo.svg"},"name":"DavidDarnes"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/"},"author":{"@type":"Person","name":"DavidDarnes"},"@type":"BlogPosting","description":"title: 낙관적 락 &amp; 비관적락 categories: 동시성 implementation feature_image: “https://picsum.photos/2560/600?image=872” — 동시성 “동시성 이슈 (concurrency issue)”는 여러 작업이 동시에 같은 자원에 접근하여 변경할 때 발생하는 문제를 말한다. 데이터베이스에 동시에 접근하여 수정을 하려한다면? 위와 같은 문제를 해결하기 위해 데이터베이스의 락(Lock)을 사용하여 충돌을 방지한다. 테이블에 접근시 락이 걸려있으면 수정이 불가하고 락이 풀려 있을 때만 수정이 가능하다. 테이블을 수정한다면 내가 이 값을 수정한다고 선점 Lock? 멀티스레드 환경(또는 여러 트랜잭션 환경)에서 공유 자원을 동시에 수정하려할떄의 데이터 충돌 -&gt; 이를 막기 위한 전략이 락 (Lock)이다. 낙관적 락 (Optimistic Lock) vs 비관적 락 (Pessimistic Lock) 낙관적 락 “왠만하면 다른 사람이 데이터를 안 거드릴 거야”라는 락을 걸지 않다가, 최종 커밋 전에 충돌을 감지한다. 충돌하면 재시도 또는 실패 처리 장점 락을 걸지 않으므로 성능이 우수하다. 충돌이 적은 상황에서 매우 효율적이다. 단점 충돌 발생시 비용이 발생한다. 충돌이 많으면 성능 저하가 발생한다. 대표적 예 UPDATE coupon SET quantity = quantity - 1, version = version + 1 WHERE id = 1 AND version = 3; 버전이 일치하지 않으면 실패한다!! @Version private Integer version; JPA로 구현한 낙관적 락 비관적 락 “다른 누군가가 데이터를 수정될 것”이다라는 가정으로 미리 락을 걸어, 공유자원(스레드/트랜잭션)에 접근하지 못하게 하는 것 장점 충돌을 사전에 방지한다. 데이터 정합성 확보에 굉장히 명확한 방식 단점 락으로 인해 대기 시간이 생긴다. (누군가가 작업이 끝날때까지 대기를 해야하므로!) 데드락 위험이 있음 ( 두개 이상의 트랜잭션이 서로가 가진 락을 기다리면서 무한정 대기하는 상태 ) 락이 많아 질수록 성능이 저하된다. 대표적 예 SELECT * FROM coupon WHERE id = 1 FOR UPDATE; 다른 트랜잭션이 데이터를 건드리지 못하도록 즉시 락을 건다. Syncronized 비관적 락의 대표적인 예 자바에서 가장 기본적인 락 메커니즘 하나의 스레드만 특정 블록/메서드에 접근 가능하도록 한다. 공유 자원 접근 전 선제적으로 락을 건다. 다른 스레드는 락이 풀릴 때 까지 대기한다. public synchronized void increment() { count++; } public void increment() { synchronized (this) { count++; } } 문제점 syncronized는 단일 JVM 에서만 유효하다. 같은 메모리 공간에서만 유효하다는 말인 즉슨, MSA 구조와 같은 서버가 여러대인 공간에서 문제가 발생할 수 있다. MSA 환경에서 여러 서버가 같은 쿠폰 번호를 발급하거나, 같은 재고를 차감하는 로직을 수행한다면? 서버 A,B,C는 자기 서버의 JVM 기준의 락을 걸기 떄문에 각각의 서버가 동시에 같은 쿠폰을 발급할 수 있다.","@context":"https://schema.org"}</script>
+{"image":"http://localhost:4000/assets/default-social-image.png","url":"http://localhost:4000/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/","headline":"낙관적 락 &amp; 비관적락","dateModified":"2025-06-01T00:00:00+01:00","datePublished":"2025-06-01T00:00:00+01:00","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/assets/logos/logo.svg"},"name":"DavidDarnes"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/"},"author":{"@type":"Person","name":"DavidDarnes"},"@type":"BlogPosting","description":"동시성 “동시성 이슈 (concurrency issue)”는 여러 작업이 동시에 같은 자원에 접근하여 변경할 때 발생하는 문제를 말한다. 데이터베이스에 동시에 접근하여 수정을 하려한다면? 위와 같은 문제를 해결하기 위해 데이터베이스의 락(Lock)을 사용하여 충돌을 방지한다. 테이블에 접근시 락이 걸려있으면 수정이 불가하고 락이 풀려 있을 때만 수정이 가능하다. 테이블을 수정한다면 내가 이 값을 수정한다고 선점 Lock? 멀티스레드 환경(또는 여러 트랜잭션 환경)에서 공유 자원을 동시에 수정하려할떄의 데이터 충돌 -&gt; 이를 막기 위한 전략이 락 (Lock)이다. 낙관적 락 (Optimistic Lock) vs 비관적 락 (Pessimistic Lock) 낙관적 락 “왠만하면 다른 사람이 데이터를 안 거드릴 거야”라는 락을 걸지 않다가, 최종 커밋 전에 충돌을 감지한다. 충돌하면 재시도 또는 실패 처리 장점 락을 걸지 않으므로 성능이 우수하다. 충돌이 적은 상황에서 매우 효율적이다. 단점 충돌 발생시 비용이 발생한다. 충돌이 많으면 성능 저하가 발생한다. 대표적 예 UPDATE coupon SET quantity = quantity - 1, version = version + 1 WHERE id = 1 AND version = 3; 버전이 일치하지 않으면 실패한다!! @Version private Integer version; JPA로 구현한 낙관적 락 비관적 락 “다른 누군가가 데이터를 수정될 것”이다라는 가정으로 미리 락을 걸어, 공유자원(스레드/트랜잭션)에 접근하지 못하게 하는 것 장점 충돌을 사전에 방지한다. 데이터 정합성 확보에 굉장히 명확한 방식 단점 락으로 인해 대기 시간이 생긴다. (누군가가 작업이 끝날때까지 대기를 해야하므로!) 데드락 위험이 있음 ( 두개 이상의 트랜잭션이 서로가 가진 락을 기다리면서 무한정 대기하는 상태 ) 락이 많아 질수록 성능이 저하된다. 대표적 예 SELECT * FROM coupon WHERE id = 1 FOR UPDATE; 다른 트랜잭션이 데이터를 건드리지 못하도록 즉시 락을 건다. Syncronized 비관적 락의 대표적인 예 자바에서 가장 기본적인 락 메커니즘 하나의 스레드만 특정 블록/메서드에 접근 가능하도록 한다. 공유 자원 접근 전 선제적으로 락을 건다. 다른 스레드는 락이 풀릴 때 까지 대기한다. public synchronized void increment() { count++; } public void increment() { synchronized (this) { count++; } } 문제점 syncronized는 단일 JVM 에서만 유효하다. 같은 메모리 공간에서만 유효하다는 말인 즉슨, MSA 구조와 같은 서버가 여러대인 공간에서 문제가 발생할 수 있다. MSA 환경에서 여러 서버가 같은 쿠폰 번호를 발급하거나, 같은 재고를 차감하는 로직을 수행한다면? 서버 A,B,C는 자기 서버의 JVM 기준의 락을 걸기 떄문에 각각의 서버가 동시에 같은 쿠폰을 발급할 수 있다.","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
     
@@ -97,7 +97,7 @@
 
   </head>
 
-  <body class="layout-post  커서-기반-페이징-cursor-based-pagination">
+  <body class="layout-post  낙관적-락-비관적락">
     <svg xmlns="http://www.w3.org/2000/svg" style="height: 0; position: absolute" xmlns:xlink="http://www.w3.org/1999/xlink">
   <symbol id="codepen" viewbox="0 0 16 16"><path d="M15.988 5.443c-.004-.02-.007-.04-.012-.058l-.01-.033c-.006-.017-.012-.034-.02-.05-.003-.012-.01-.023-.014-.034l-.023-.045-.02-.032-.03-.04-.024-.03c-.01-.013-.022-.026-.034-.038l-.027-.027-.04-.032-.03-.024-.012-.01L8.38.117c-.23-.155-.53-.155-.76 0L.305 4.99.296 5c-.012.007-.022.015-.032.023-.014.01-.027.02-.04.032l-.027.027-.034.037-.024.03-.03.04c-.006.012-.013.022-.02.033l-.023.045-.015.034c-.007.016-.012.033-.018.05l-.01.032c-.005.02-.01.038-.012.058l-.006.03C.002 5.5 0 5.53 0 5.56v4.875c0 .03.002.06.006.09l.007.03c.003.02.006.04.013.058l.01.033c.006.018.01.035.018.05l.015.033c.006.016.014.03.023.047l.02.03c.008.016.018.03.03.042.007.01.014.02.023.03.01.012.02.025.034.036.01.01.018.02.028.026l.04.033.03.023.01.01 7.31 4.876c.116.078.248.117.382.116.134 0 .266-.04.38-.116l7.314-4.875.01-.01c.012-.007.022-.015.032-.023.014-.01.027-.02.04-.032l.027-.027.034-.037.024-.03.03-.04.02-.032.023-.046.015-.033.018-.052.01-.033c.005-.02.01-.038.013-.058 0-.01.003-.02.004-.03.004-.03.006-.06.006-.09V5.564c0-.03-.002-.06-.006-.09l-.007-.03zM8 9.626L5.568 8 8 6.374 10.432 8 8 9.626zM7.312 5.18l-2.98 1.993-2.406-1.61 5.386-3.59v3.206zM3.095 8l-1.72 1.15v-2.3L3.095 8zm1.237.828l2.98 1.993v3.208l-5.386-3.59 2.406-1.61zm4.355 1.993l2.98-1.993 2.407 1.61-5.387 3.59v-3.206zM12.905 8l1.72-1.15v2.3L12.905 8zm-1.237-.827L8.688 5.18V1.97l5.386 3.59-2.406 1.61z" fill-rule="nonzero"></path></symbol>
   <symbol id="dribbble" viewbox="0 0 16 16"><path d="M8 16c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm6.747-6.905c-.234-.074-2.115-.635-4.257-.292.894 2.456 1.258 4.456 1.328 4.872 1.533-1.037 2.624-2.68 2.93-4.58zM10.67 14.3c-.102-.6-.5-2.688-1.46-5.18l-.044.014C5.312 10.477 3.93 13.15 3.806 13.4c1.158.905 2.614 1.444 4.194 1.444.947 0 1.85-.194 2.67-.543zm-7.747-1.72c.155-.266 2.03-3.37 5.555-4.51.09-.03.18-.056.27-.08-.173-.39-.36-.778-.555-1.16C4.78 7.85 1.47 7.807 1.17 7.8l-.003.208c0 1.755.665 3.358 1.756 4.57zM1.31 6.61c.307.005 3.122.017 6.318-.832-1.132-2.012-2.353-3.705-2.533-3.952-1.912.902-3.34 2.664-3.784 4.785zM6.4 1.368c.188.253 1.43 1.943 2.548 4 2.43-.91 3.46-2.293 3.582-2.468C11.323 1.827 9.736 1.176 8 1.176c-.55 0-1.087.066-1.6.19zm6.89 2.322c-.145.194-1.29 1.662-3.816 2.694.16.325.31.656.453.99.05.117.1.235.147.352 2.274-.286 4.533.172 4.758.22-.015-1.613-.59-3.094-1.543-4.257z"></path></symbol>
@@ -212,28 +212,23 @@
 
   <article class="article  article--post  content  typeset">
 
-    <h1>커서 기반 페이징 (Cursor Based Pagination)</h1>
+    <h1>낙관적 락 &amp; 비관적락</h1>
     
 
 <small class="small  post-meta">
   
   
     
+      <span class="label  label--category"><a href="/categories/#%EB%8F%99%EC%8B%9C%EC%84%B1">동시성</a></span>,
+    
+      <span class="label  label--category"><a href="/categories/#">-</a></span>,
+    
       <span class="label  label--category"><a href="/categories/#implementation">implementation</a></span>
     
    · <time datetime="2025-06-01T00:00:00+01:00" class="time">01 Jun 2025</time>
 </small>
 
-    <hr>
-<p>title: 낙관적 락 &amp; 비관적락
-categories: 동시성</p>
-<ul>
-  <li>implementation
-feature_image: “https://picsum.photos/2560/600?image=872”
-—</li>
-</ul>
-
-<h2 id="동시성">동시성</h2>
+    <h2 id="동시성">동시성</h2>
 
 <p>“동시성 이슈 (concurrency issue)”는 <strong>여러 작업이 동시에 같은 자원에 접근하여 변경할 때 발생하는 문제</strong>를 말한다.
 <br></p>
@@ -357,7 +352,7 @@ feature_image: “https://picsum.photos/2560/600?image=872”
 
       
 
-      <a class="button" href="https://twitter.com/intent/tweet/?url=http://localhost:4000/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&amp;%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/&amp;text=%EC%BB%A4%EC%84%9C%20%EA%B8%B0%EB%B0%98%20%ED%8E%98%EC%9D%B4%EC%A7%95%20(Cursor%20Based%20Pagination)&amp;via=DavidDarnes" style="background: #0d94e7">Twitter  <svg width="16" height="16" class="icon  icon--twitter" role="img" alt="twitter"><title>twitter</title>
+      <a class="button" href="https://twitter.com/intent/tweet/?url=http://localhost:4000/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&amp;%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/&amp;text=%EB%82%99%EA%B4%80%EC%A0%81%20%EB%9D%BD%20&amp;%20%EB%B9%84%EA%B4%80%EC%A0%81%EB%9D%BD&amp;via=DavidDarnes" style="background: #0d94e7">Twitter  <svg width="16" height="16" class="icon  icon--twitter" role="img" alt="twitter"><title>twitter</title>
 <use xlink:href="#twitter" fill="CurrentColor"></use></svg>
 </a>
 
@@ -371,7 +366,7 @@ feature_image: “https://picsum.photos/2560/600?image=872”
 
       
 
-      <a class="button" href="https://facebook.com/sharer/sharer.php?u=http://localhost:4000/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&amp;%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/" style="background: #3B5998">facebook  <svg width="16" height="16" class="icon  icon--facebook" role="img" alt="facebook"><title>facebook</title>
+      <a class="button" href="https://facebook.com/sharer/sharer.php?u=http://localhost:4000/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&amp;%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/" style="background: #3B5998">facebook  <svg width="16" height="16" class="icon  icon--facebook" role="img" alt="facebook"><title>facebook</title>
 <use xlink:href="#facebook" fill="CurrentColor"></use></svg>
 </a>
 
@@ -385,7 +380,7 @@ feature_image: “https://picsum.photos/2560/600?image=872”
 
       
 
-      <a class="button" href="mailto:?subject=%EC%BB%A4%EC%84%9C%20%EA%B8%B0%EB%B0%98%20%ED%8E%98%EC%9D%B4%EC%A7%95%20(Cursor%20Based%20Pagination)&amp;body=Hey,%20check%20out%20this:%20http://localhost:4000/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&amp;%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/" style="background: true">Email  <svg width="16" height="16" class="icon  icon--email" role="img" alt="email"><title>email</title>
+      <a class="button" href="mailto:?subject=%EB%82%99%EA%B4%80%EC%A0%81%20%EB%9D%BD%20&amp;%20%EB%B9%84%EA%B4%80%EC%A0%81%EB%9D%BD&amp;body=Hey,%20check%20out%20this:%20http://localhost:4000/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&amp;%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/" style="background: true">Email  <svg width="16" height="16" class="icon  icon--email" role="img" alt="email"><title>email</title>
 <use xlink:href="#email" fill="CurrentColor"></use></svg>
 </a>
 

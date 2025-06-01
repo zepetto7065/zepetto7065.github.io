@@ -254,27 +254,30 @@
         
         <li class="item  item--post">
           <article class="article  article--post  typeset">
-            <h3><a href="/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/">커서 기반 페이징 (Cursor Based Pagination)</a></h3>
+            <h3><a href="/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/">낙관적 락 & 비관적락</a></h3>
             
 
 <small class="small  post-meta">
   
   
     
+      <span class="label  label--category"><a href="/categories/#동시성">동시성</a></span>,
+    
+      <span class="label  label--category"><a href="/categories/#">-</a></span>,
+    
       <span class="label  label--category"><a href="/categories/#implementation">implementation</a></span>
     
   &nbsp;&middot;&nbsp;<time datetime="2025-06-01T00:00:00+01:00" class="time">01 Jun 2025</time>
 </small>
 
-            <hr />
-<p>title: 낙관적 락 &amp; 비관적락 categories: 동시성</p>
-<ul> <li>implementation feature_image: “https://picsum.photos/2560/600?image=872” —</li> </ul>
-<h2 id="동시성">동시성</h2>
+            <h2 id="동시성">동시성</h2>
 <p>“동시성 이슈 (concurrency issue)”는 <strong>여러 작업이 동시에 같은 자원에 접근하여 변경할 때 발생하는 문제</strong>를 말한다. <br /></p>
 <blockquote> <p>데이터베이스에 동시에 접근하여 수정을 하려한다면?</p> </blockquote>
 <p>위와 같은 문제를 해결하기 위해 데이터베이스의 락(Lock)을 사용하여 충돌을 방지한다.</p>
-<ul> <li>테이블에 접근시 락이 걸려있으면 수정이 불가하고 락이 풀려...
-</li></ul>
+<ul> <li>테이블에 접근시 락이 걸려있으면 수정이 불가하고 락이 풀려 있을 때만 수정이 가능하다.</li> <li>테이블을 수정한다면 내가 이 값을 수정한다고 선점</li> </ul>
+<h3 id="lock">Lock?</h3>
+<p>멀티스레드...
+</p>
 
           </article>
         </li>
@@ -307,6 +310,86 @@
         </li>
       
     </ul>
+    <hr/>
+  </section>
+
+  
+  <section class="section  typeset">
+    <h2 id="동시성">동시성</h2>
+    <ul class="list  list--posts">
+      
+        
+        <li class="item  item--post">
+          <article class="article  article--post  typeset">
+            <h3><a href="/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/">낙관적 락 & 비관적락</a></h3>
+            
+
+<small class="small  post-meta">
+  
+  
+    
+      <span class="label  label--category"><a href="/categories/#동시성">동시성</a></span>,
+    
+      <span class="label  label--category"><a href="/categories/#">-</a></span>,
+    
+      <span class="label  label--category"><a href="/categories/#implementation">implementation</a></span>
+    
+  &nbsp;&middot;&nbsp;<time datetime="2025-06-01T00:00:00+01:00" class="time">01 Jun 2025</time>
+</small>
+
+            <h2 id="동시성">동시성</h2>
+<p>“동시성 이슈 (concurrency issue)”는 <strong>여러 작업이 동시에 같은 자원에 접근하여 변경할 때 발생하는 문제</strong>를 말한다. <br /></p>
+<blockquote> <p>데이터베이스에 동시에 접근하여 수정을 하려한다면?</p> </blockquote>
+<p>위와 같은 문제를 해결하기 위해 데이터베이스의 락(Lock)을 사용하여 충돌을 방지한다.</p>
+<ul> <li>테이블에 접근시 락이 걸려있으면 수정이 불가하고 락이 풀려 있을 때만 수정이 가능하다.</li> <li>테이블을 수정한다면 내가 이 값을 수정한다고 선점</li> </ul>
+<h3 id="lock">Lock?</h3>
+<p>멀티스레드...
+</p>
+
+          </article>
+        </li>
+      
+    </ul>
+    <hr/>
+  </section>
+
+  
+  <section class="section  typeset">
+    <h2 id="">-</h2>
+    <ul class="list  list--posts">
+      
+        
+        <li class="item  item--post">
+          <article class="article  article--post  typeset">
+            <h3><a href="/%EB%8F%99%EC%8B%9C%EC%84%B1/-/implementation/2025/06/01/%EB%82%99%EA%B4%80%EC%A0%81-%EB%9D%BD&%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BD/">낙관적 락 & 비관적락</a></h3>
+            
+
+<small class="small  post-meta">
+  
+  
+    
+      <span class="label  label--category"><a href="/categories/#동시성">동시성</a></span>,
+    
+      <span class="label  label--category"><a href="/categories/#">-</a></span>,
+    
+      <span class="label  label--category"><a href="/categories/#implementation">implementation</a></span>
+    
+  &nbsp;&middot;&nbsp;<time datetime="2025-06-01T00:00:00+01:00" class="time">01 Jun 2025</time>
+</small>
+
+            <h2 id="동시성">동시성</h2>
+<p>“동시성 이슈 (concurrency issue)”는 <strong>여러 작업이 동시에 같은 자원에 접근하여 변경할 때 발생하는 문제</strong>를 말한다. <br /></p>
+<blockquote> <p>데이터베이스에 동시에 접근하여 수정을 하려한다면?</p> </blockquote>
+<p>위와 같은 문제를 해결하기 위해 데이터베이스의 락(Lock)을 사용하여 충돌을 방지한다.</p>
+<ul> <li>테이블에 접근시 락이 걸려있으면 수정이 불가하고 락이 풀려 있을 때만 수정이 가능하다.</li> <li>테이블을 수정한다면 내가 이 값을 수정한다고 선점</li> </ul>
+<h3 id="lock">Lock?</h3>
+<p>멀티스레드...
+</p>
+
+          </article>
+        </li>
+      
+    </ul>
     
   </section>
 
@@ -330,6 +413,14 @@
     
       <li class="item  item--category">
         <a href="#implementation">implementation</a>
+      </li>
+    
+      <li class="item  item--category">
+        <a href="#동시성">동시성</a>
+      </li>
+    
+      <li class="item  item--category">
+        <a href="#">-</a>
       </li>
     
   </ul>
