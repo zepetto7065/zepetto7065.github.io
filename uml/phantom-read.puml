@@ -1,0 +1,20 @@
+@startuml
+actor A as a
+database DB as db
+actor B as b
+
+== 트랜잭션 B 시작 ==
+b -> db : BEGIN TRANSACTION B
+b -> db : SELECT * FROM 주문 WHERE 금액 > 10000\n(첫 번째 읽기 → 2건 조회됨)
+
+== 트랜잭션 A 시작 ==
+a -> db : BEGIN TRANSACTION A
+a -> db : INSERT INTO 주문 (사용자, 금액) VALUES ('홍길동', 15000)
+a -> db : COMMIT
+
+== 트랜잭션 B에서 다시 조회 ==
+b -> db : SELECT * FROM 주문 WHERE 금액 > 10000\n(두 번째 읽기 → 3건 조회됨 → Phantom Read 발생)
+
+== 트랜잭션 B 커밋 ==
+b -> db : COMMIT
+@enduml

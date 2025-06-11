@@ -1,0 +1,19 @@
+@startuml
+actor A as a
+database DB as db
+actor B as b
+
+== 트랜잭션 A 시작 ==
+a -> db : BEGIN TRANSACTION A
+a -> db : UPDATE 계좌 SET 잔액 = 잔액 - 100\n(커밋하지 않음)
+
+== 트랜잭션 B 시작 ==
+b -> db : BEGIN TRANSACTION B
+b -> db : SELECT 잔액 FROM 계좌 WHERE 사용자 = '홍길동'\n(→ 아직 커밋되지 않았으므로 읽지 못함, 기존값 1000원 반환)
+
+== 트랜잭션 A 롤백 ==
+a -> db : ROLLBACK
+
+== 트랜잭션 B 커밋 ==
+b -> db : COMMIT
+@enduml

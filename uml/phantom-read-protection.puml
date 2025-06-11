@@ -1,0 +1,20 @@
+@startuml
+actor A as a
+database DB as db
+actor B as b
+
+== 트랜잭션 B 시작 ==
+b -> db : BEGIN TRANSACTION B (Serializable)
+b -> db : SELECT * FROM 주문 WHERE 금액 > 10000\n→ 2건 조회됨
+
+== 트랜잭션 A 시작 ==
+a -> db : BEGIN TRANSACTION A
+a -> db : INSERT INTO 주문 (사용자, 금액) VALUES ('홍길동', 15000)\n(차단됨 - 범위락)
+
+a --> db : 대기 또는 롤백됨\n(Serializable 격리로 인해 INSERT 지연 또는 실패)
+
+== 트랜잭션 B 종료 ==
+b -> db : COMMIT
+
+== 트랜잭션 A 재시도 가능 ==
+@enduml
